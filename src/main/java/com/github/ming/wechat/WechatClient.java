@@ -6,9 +6,9 @@ import com.github.ming.wechat.client.bean.user.WechatUser;
 import com.github.ming.wechat.client.bean.user.WechatUserOpenIdList;
 import com.github.ming.wechat.client.bean.user.WechatUserTag;
 import com.github.ming.wechat.client.exception.WechatException;
-import com.github.ming.wechat.event.bean.WechatEvent;
-import com.github.ming.wechat.event.bean.WechatReply;
-import com.github.ming.wechat.event.handler.WechatMsgEventHandler;
+import com.github.ming.wechat.msgevent.bean.WechatEvent;
+import com.github.ming.wechat.msgevent.bean.WechatReply;
+import com.github.ming.wechat.msgevent.handler.WechatMsgEventHandler;
 
 import java.util.List;
 
@@ -215,11 +215,11 @@ public class WechatClient {
      * @return WechatEvent
      */
     public WechatEvent xml2WechatEvent(String timestamp, String nonce, String encryptType, String msgSignature,
-                                     String requestBody) throws WechatException {
+                                       String requestBody) throws WechatException {
         if (msgEventHandler == null) {
             throw new WechatException("未初始化WechatEventHandler");
         }
-        return msgEventHandler.handleReceive(timestamp, nonce, encryptType, msgSignature, requestBody);
+        return msgEventHandler.xml2WechatEvent(timestamp, nonce, encryptType, msgSignature, requestBody);
     }
 
     /**

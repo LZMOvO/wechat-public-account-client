@@ -1,4 +1,4 @@
-package com.github.ming.wechat.event.bean;
+package com.github.ming.wechat.msgevent.bean;
 
 import org.eclipse.persistence.oxm.annotations.XmlCDATA;
 

@@ -1,4 +1,4 @@
-package com.github.ming.wechat.event.bean;
+package com.github.ming.wechat.msgevent.bean;
 
 import org.eclipse.persistence.oxm.annotations.XmlCDATA;
 
@@ -8,42 +8,43 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * 微信回复图文消息
+ * 回复视频消息
  *
  * @author : Liu Zeming
- * @date : 2019-01-01 02:36
+ * @date : 2019-01-01 01:08
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class WechatReplyArticle {
+public class WechatReplyVideo {
 
     /**
-     * 图文消息标题
+     * 通过素材管理中的接口上传多媒体文件，得到的id
+     */
+    @XmlCDATA
+    @XmlElement(name = "MediaId")
+    private String mediaId;
+
+    /**
+     * 视频消息的标题
      */
     @XmlCDATA
     @XmlElement(name = "Title")
     private String title;
 
     /**
-     * 图文消息描述
+     * 视频消息的描述
      */
     @XmlCDATA
     @XmlElement(name = "Description")
     private String description;
 
-    /**
-     * 图片链接，支持JPG、PNG格式，较好的效果为大图360*200，小图200*200
-     */
-    @XmlCDATA
-    @XmlElement(name = "PicUrl")
-    private String picUrl;
+    public String getMediaId() {
+        return mediaId;
+    }
 
-    /**
-     * 点击图文消息跳转链接
-     */
-    @XmlCDATA
-    @XmlElement(name = "Url")
-    private String url;
+    public void setMediaId(String mediaId) {
+        this.mediaId = mediaId;
+    }
 
     public String getTitle() {
         return title;
@@ -59,21 +60,5 @@ public class WechatReplyArticle {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getPicUrl() {
-        return picUrl;
-    }
-
-    public void setPicUrl(String picUrl) {
-        this.picUrl = picUrl;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
     }
 }

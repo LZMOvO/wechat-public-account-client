@@ -1,4 +1,4 @@
-package com.github.ming.wechat.event.bean;
+package com.github.ming.wechat.msgevent.bean;
 
 import org.eclipse.persistence.oxm.annotations.XmlCDATA;
 
@@ -8,14 +8,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * 回复图片消息
+ * 回复语音消息
  *
  * @author : Liu Zeming
  * @date : 2019-01-01 01:08
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class WechatReplyImage {
+public class WechatReplyVoice {
 
     /**
      * 通过素材管理中的接口上传多媒体文件，得到的id

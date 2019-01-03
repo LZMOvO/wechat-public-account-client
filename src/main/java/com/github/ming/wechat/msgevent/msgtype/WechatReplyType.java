@@ -1,4 +1,4 @@
-package com.github.ming.wechat.event.msgtype;
+package com.github.ming.wechat.msgevent.msgtype;
 
 /**
  * 微信消息回复类型（微信消息中MsgType的值）

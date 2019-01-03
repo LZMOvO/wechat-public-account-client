@@ -1,10 +1,10 @@
-package com.github.ming.wechat.event.handler;
+package com.github.ming.wechat.msgevent.handler;
 
 import com.github.ming.wechat.client.exception.WechatException;
-import com.github.ming.wechat.event.aes.AesException;
-import com.github.ming.wechat.event.aes.WXBizMsgCrypt;
-import com.github.ming.wechat.event.bean.WechatEvent;
-import com.github.ming.wechat.event.bean.WechatReply;
+import com.github.ming.wechat.msgevent.aes.AesException;
+import com.github.ming.wechat.msgevent.aes.WXBizMsgCrypt;
+import com.github.ming.wechat.msgevent.bean.WechatEvent;
+import com.github.ming.wechat.msgevent.bean.WechatReply;
 import com.github.ming.wechat.util.StringUtil;
 import com.github.ming.wechat.util.XmlUtil;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -80,7 +80,7 @@ public class WechatMsgEventHandler {
      * @param requestBody  微信发来的请求体
      * @return WechatEvent
      */
-    public WechatEvent handleReceive(String timestamp, String nonce, String encryptType, String msgSignature,
+    public WechatEvent xml2WechatEvent(String timestamp, String nonce, String encryptType, String msgSignature,
                                      String requestBody) throws WechatException {
         if (ENCRYPT_TYPE.equals(encryptType)) {
             if (wxBizMsgCrypt == null) {

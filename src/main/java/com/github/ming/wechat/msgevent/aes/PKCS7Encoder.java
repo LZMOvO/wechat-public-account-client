@@ -6,7 +6,7 @@
 
 // ------------------------------------------------------------------------
 
-package com.github.ming.wechat.event.aes;
+package com.github.ming.wechat.msgevent.aes;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;

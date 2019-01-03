@@ -6,7 +6,7 @@
 
 // ------------------------------------------------------------------------
 
-package com.github.ming.wechat.event.aes;
+package com.github.ming.wechat.msgevent.aes;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
