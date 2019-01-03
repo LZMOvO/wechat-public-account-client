@@ -5,11 +5,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.ming.wechat.client.apiurl.WechatApiUrls;
 import com.github.ming.wechat.client.bean.result.ErrorInfo;
 import com.github.ming.wechat.client.bean.user.WechatUser;
+import com.github.ming.wechat.client.bean.user.WechatUserOpenIdList;
 import com.github.ming.wechat.client.bean.user.WechatUserTag;
 import com.github.ming.wechat.client.bean.user.request.*;
 import com.github.ming.wechat.client.bean.user.response.*;
-import com.github.ming.wechat.client.config.WechatConfig;
 import com.github.ming.wechat.client.exception.WechatException;
+import com.github.ming.wechat.client.handler.WechatResultHandler;
 import com.github.ming.wechat.util.HttpUtil;
 import com.github.ming.wechat.util.StringUtil;
 import com.github.ming.wechat.util.WechatUtil;
@@ -24,18 +25,12 @@ import java.util.Map;
  * @author : Liu Zeming
  * @date : 2018-12-14 17:36
  */
-public final class WechatUserClient extends WechatBaseClient {
+public final class WechatUserClient {
 
+    private WechatCredentialHolder credentialHolder;
 
-    private WechatUserClient() {
-    }
-
-    public static WechatUserClient getInstance() {
-        return WechatUserClientHolder.INSTANCE;
-    }
-
-    private static class WechatUserClientHolder {
-        private static final WechatUserClient INSTANCE = new WechatUserClient();
+    public WechatUserClient(WechatCredentialHolder credentialHolder) {
+        this.credentialHolder = credentialHolder;
     }
 
     /*---- 用户标签管理 ----*/
@@ -66,16 +61,17 @@ public final class WechatUserClient extends WechatBaseClient {
         boolean refreshToken = false;
         int times = 0;
         do {
-            result = HttpUtil.post(WechatApiUrls.CREATE_USER_TAG_URL.replace("ACCESS_TOKEN", super.getAccessToken(refreshToken)),
-                    JSON.toJSONString(postUserTag));
-            if (!super.judgeAccessTokenTimeout(result)) {
+            result = HttpUtil.post(WechatApiUrls.CREATE_USER_TAG_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)), JSON.toJSONString(postUserTag));
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
                 refreshToken = true;
                 ++times;
             }
-        } while (times < WechatConfig.accessTokenTimeoutRetry);
-        return super.result2Bean(result, WechatUserTagResult.class);
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        postUserTag = null;
+        return WechatResultHandler.result2Bean(result, WechatUserTagResult.class);
     }
 
     /**
@@ -99,15 +95,16 @@ public final class WechatUserClient extends WechatBaseClient {
         boolean refreshToken = false;
         int times = 0;
         do {
-            result = HttpUtil.get(WechatApiUrls.GET_USER_TAGS_URL.replace("ACCESS_TOKEN", super.getAccessToken(refreshToken)));
-            if (!super.judgeAccessTokenTimeout(result)) {
+            result = HttpUtil.get(WechatApiUrls.GET_USER_TAGS_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)));
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
                 refreshToken = true;
                 times++;
             }
-        } while (times < WechatConfig.accessTokenTimeoutRetry);
-        return super.result2Bean(result, WechatUserTagListResult.class);
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        return WechatResultHandler.result2Bean(result, WechatUserTagListResult.class);
     }
 
     /**
@@ -126,6 +123,7 @@ public final class WechatUserClient extends WechatBaseClient {
         }
         ErrorInfo errorInfo = updateUserTagPost(new UpdateWechatUserTag(id, name));
         if (errorInfo.getErrorCode() == 0) {
+            errorInfo = null;
             return true;
         } else {
             throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
@@ -144,16 +142,17 @@ public final class WechatUserClient extends WechatBaseClient {
         boolean refreshToken = false;
         int times = 0;
         do {
-            result = HttpUtil.post(WechatApiUrls.UPDATE_USER_TAG_URL.replace("ACCESS_TOKEN", super.getAccessToken(refreshToken)),
-                    JSON.toJSONString(updateWechatUserTag));
-            if (!super.judgeAccessTokenTimeout(result)) {
+            result = HttpUtil.post(WechatApiUrls.UPDATE_USER_TAG_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)), JSON.toJSONString(updateWechatUserTag));
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
                 refreshToken = true;
                 times++;
             }
-        } while (times < WechatConfig.accessTokenTimeoutRetry);
-        return super.result2Bean(result, ErrorInfo.class);
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        updateWechatUserTag = null;
+        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
     }
 
     /**
@@ -168,6 +167,7 @@ public final class WechatUserClient extends WechatBaseClient {
         }
         ErrorInfo errorInfo = deleteUserTagPost(new DeleteWechatUserTag(id));
         if (errorInfo.getErrorCode() == 0) {
+            errorInfo = null;
             return true;
         } else {
             throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
@@ -188,16 +188,18 @@ public final class WechatUserClient extends WechatBaseClient {
         boolean refreshToken = false;
         int times = 0;
         do {
-            result = HttpUtil.post(WechatApiUrls.DELETE_USER_TAG_URL.replace("ACCESS_TOKEN", super.getAccessToken(refreshToken)),
+            result = HttpUtil.post(WechatApiUrls.DELETE_USER_TAG_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)),
                     JSON.toJSONString(deleteUserTag));
-            if (!super.judgeAccessTokenTimeout(result)) {
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
                 refreshToken = true;
                 times++;
             }
-        } while (times < WechatConfig.accessTokenTimeoutRetry);
-        return super.result2Bean(result, ErrorInfo.class);
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        deleteUserTag = null;
+        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
     }
 
     /**
@@ -227,16 +229,18 @@ public final class WechatUserClient extends WechatBaseClient {
         boolean refreshToken = false;
         int times = 0;
         do {
-            result = HttpUtil.post(WechatApiUrls.USER_TAGS_FANS_URL.replace("ACCESS_TOKEN", super.getAccessToken(refreshToken)),
+            result = HttpUtil.post(WechatApiUrls.USER_TAGS_FANS_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)),
                     JSON.toJSONString(getWechatUserTagFans));
-            if (!super.judgeAccessTokenTimeout(result)) {
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
                 refreshToken = true;
                 times++;
             }
-        } while (times < WechatConfig.accessTokenTimeoutRetry);
-        return super.result2Bean(result, WechatUserTagFansResult.class);
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        getWechatUserTagFans = null;
+        return WechatResultHandler.result2Bean(result, WechatUserTagFansResult.class);
     }
 
     /**
@@ -256,6 +260,7 @@ public final class WechatUserClient extends WechatBaseClient {
         }
         ErrorInfo errorInfo = batchSetUserTagPost(new BatchOperateWechatUserTag(tagId, openIdList));
         if (errorInfo.getErrorCode() == 0) {
+            errorInfo = null;
             return true;
         } else {
             throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
@@ -274,16 +279,17 @@ public final class WechatUserClient extends WechatBaseClient {
         boolean refreshToken = false;
         int times = 0;
         do {
-            result = HttpUtil.post(WechatApiUrls.BATCH_SET_USER_TAG_URL.replace("ACCESS_TOKEN", super.getAccessToken(refreshToken)),
-                    JSON.toJSONString(batchOperateUserTag));
-            if (!super.judgeAccessTokenTimeout(result)) {
+            result = HttpUtil.post(WechatApiUrls.BATCH_SET_USER_TAG_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)), JSON.toJSONString(batchOperateUserTag));
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
                 refreshToken = true;
                 times++;
             }
-        } while (times < WechatConfig.accessTokenTimeoutRetry);
-        return super.result2Bean(result, ErrorInfo.class);
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        batchOperateUserTag = null;
+        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
     }
 
     /**
@@ -321,16 +327,17 @@ public final class WechatUserClient extends WechatBaseClient {
         boolean refreshToken = false;
         int times = 0;
         do {
-            result = HttpUtil.post(WechatApiUrls.BATCH_CANCEL_USER_TAG_URL.replace("ACCESS_TOKEN", super.getAccessToken(refreshToken)),
-                    JSON.toJSONString(batchOperateUserTag));
-            if (!super.judgeAccessTokenTimeout(result)) {
+            result = HttpUtil.post(WechatApiUrls.BATCH_CANCEL_USER_TAG_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)), JSON.toJSONString(batchOperateUserTag));
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
                 refreshToken = true;
                 times++;
             }
-        } while (times < WechatConfig.accessTokenTimeoutRetry);
-        return super.result2Bean(result, ErrorInfo.class);
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        batchOperateUserTag = null;
+        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
     }
 
     /**
@@ -358,20 +365,19 @@ public final class WechatUserClient extends WechatBaseClient {
         String result;
         boolean refreshToken = false;
         int times = 0;
-        Map<String, Object> params = new HashMap<String, Object>(3);
+        Map<String, Object> params = new HashMap<>(3);
         params.put("openid", openId);
         do {
-            result = HttpUtil.post(WechatApiUrls.GET_USER_TAGS_FOR_USER_URL.replace("ACCESS_TOKEN", super.getAccessToken(refreshToken)),
-                    JSON.toJSONString(new JSONObject(params)));
-            if (!super.judgeAccessTokenTimeout(result)) {
+            result = HttpUtil.post(WechatApiUrls.GET_USER_TAGS_FOR_USER_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)), JSON.toJSONString(new JSONObject(params)));
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
                 refreshToken = true;
                 times++;
             }
-        } while (times < WechatConfig.accessTokenTimeoutRetry);
-        params = null;
-        return super.result2Bean(result, WechatUserTagsForUserResult.class);
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        return WechatResultHandler.result2Bean(result, WechatUserTagsForUserResult.class);
     }
 
     /*---- 设置用户备注名 ----*/
@@ -383,7 +389,6 @@ public final class WechatUserClient extends WechatBaseClient {
      * @param openId     用户openid
      * @param remarkName 备注名
      * @return true=成功
-     * @throws WechatException
      */
     public boolean updateUserRemarkName(String openId, String remarkName) throws WechatException {
         if (StringUtil.isBlank(openId)) {
@@ -412,19 +417,20 @@ public final class WechatUserClient extends WechatBaseClient {
         boolean refreshToken = false;
         int times = 0;
         do {
-            result = HttpUtil.post(WechatApiUrls.UPDATE_USER_REMARK_NAME_URL.replace("ACCESS_TOKEN", super.getAccessToken(refreshToken)),
-                    JSON.toJSONString(updateWechatUserRemarkName));
-            if (!super.judgeAccessTokenTimeout(result)) {
+            result = HttpUtil.post(WechatApiUrls.UPDATE_USER_REMARK_NAME_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)), JSON.toJSONString(updateWechatUserRemarkName));
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
                 refreshToken = true;
                 times++;
             }
-        } while (times < WechatConfig.accessTokenTimeoutRetry);
-        return super.result2Bean(result, ErrorInfo.class);
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        updateWechatUserRemarkName = null;
+        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
     }
 
-    /*---- 用户信息 ----*/
+    /*---- 获取用户基本信息 ----*/
 
     /**
      * 获取用户基本信息（包括UnionID机制）
@@ -453,16 +459,16 @@ public final class WechatUserClient extends WechatBaseClient {
         boolean refreshToken = false;
         int times = 0;
         do {
-            result = HttpUtil.get(WechatApiUrls.USER_INFO_URL.replace("ACCESS_TOKEN", super.getAccessToken(refreshToken))
-                    .replace("OPENID", openId).replace("LANG", lang));
-            if (!super.judgeAccessTokenTimeout(result)) {
+            result = HttpUtil.get(WechatApiUrls.USER_INFO_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)).replace("OPENID", openId).replace("LANG", lang));
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
                 refreshToken = true;
                 times++;
             }
-        } while (times < WechatConfig.accessTokenTimeoutRetry);
-        return super.result2Bean(result, WechatUser.class);
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        return WechatResultHandler.result2Bean(result, WechatUser.class);
     }
 
     /**
@@ -470,8 +476,7 @@ public final class WechatUserClient extends WechatBaseClient {
      *
      * @param lang       返回国家地区语言版本，zh_CN 简体，zh_TW 繁体，en 英语，传其他内容返回简体
      * @param openIdList 批量获取用户信息的用户openId的list
-     * @return
-     * @throws WechatException
+     * @return 批量用户列表
      */
     public List<WechatUser> batchGetUserInfo(String lang, List<String> openIdList) throws WechatException {
         if (openIdList == null || openIdList.size() == 0) {
@@ -487,25 +492,192 @@ public final class WechatUserClient extends WechatBaseClient {
      * accessToken超时重试
      *
      * @param batchGetWechatUserInfo 批量获取用户基本信息参数
-     * @return
+     * @return 微信结果集
      */
     private WechatUserInfoListResult batchGetUserInfoPost(BatchGetWechatUserInfo batchGetWechatUserInfo) {
         String result;
         boolean refreshToken = false;
         int times = 0;
         do {
-            result = HttpUtil.post(WechatApiUrls.BATCH_GET_USER_INFO_URL.replace("ACCESS_TOKEN", super.getAccessToken(refreshToken)),
-                    JSON.toJSONString(batchGetWechatUserInfo));
-            if (!super.judgeAccessTokenTimeout(result)) {
+            result = HttpUtil.post(WechatApiUrls.BATCH_GET_USER_INFO_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)), JSON.toJSONString(batchGetWechatUserInfo));
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
                 refreshToken = true;
                 times++;
             }
-        } while (times < WechatConfig.accessTokenTimeoutRetry);
-        return super.result2Bean(result, WechatUserInfoListResult.class);
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        batchGetWechatUserInfo = null;
+        return WechatResultHandler.result2Bean(result, WechatUserInfoListResult.class);
     }
 
-    // TODO
+    /* ---- 获取用户列表 ----*/
+
+    /**
+     * 获取用户列表
+     *
+     * @param nextOpenId 第一个拉取的OPENID，不填默认从头开始拉取
+     * @return 用户列表信息
+     */
+    public WechatUserOpenIdList userList(String nextOpenId) throws WechatException {
+        if (nextOpenId == null) {
+            nextOpenId = "";
+        }
+        return userListGet(nextOpenId);
+    }
+
+    /**
+     * 获取用户列表 实际接口调用
+     * accessToken超时重试
+     *
+     * @param nextOpenId 第一个拉取的OPENID，不填默认从头开始拉取
+     * @return 用户列表信息
+     */
+    private WechatUserOpenIdList userListGet(String nextOpenId) {
+        String result;
+        boolean refreshToken = false;
+        int times = 0;
+        do {
+            result = HttpUtil.get(WechatApiUrls.USER_LIST_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)).replace("NEXT_OPENID", nextOpenId));
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
+                break;
+            } else {
+                refreshToken = true;
+                times++;
+            }
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        return WechatResultHandler.result2Bean(result, WechatUserOpenIdList.class);
+    }
+    /*---- 黑名单管理----*/
+
+    /**
+     * 获取公众号的黑名单列表
+     *
+     * @param nextOpenId 第一个拉取的OPENID，不填默认从头开始拉取
+     * @return 黑名单列表结果(替换掉原有返回结果集)
+     */
+    public WechatUserOpenIdList blacklist(String nextOpenId) {
+        WechatUserBlacklistResult result = blacklistPost(nextOpenId);
+        WechatUserOpenIdList wechatUserOpenIdList = new WechatUserOpenIdList();
+        wechatUserOpenIdList.setCount(result.getCount());
+        wechatUserOpenIdList.setTotal(result.getTotal());
+        wechatUserOpenIdList.setOpenIdList(result.getData().getOpenIdList());
+        wechatUserOpenIdList.setNextOpenid(result.getNextOpenid());
+        return wechatUserOpenIdList;
+    }
+
+    /**
+     * 获取公众号的黑名单列表 实际接口调用
+     * accessToken超时重试
+     *
+     * @param nextOpenId 第一个拉取的OPENID，不填默认从头开始拉取
+     * @return 黑名单列表结果
+     */
+    private WechatUserBlacklistResult blacklistPost(String nextOpenId) {
+        String result;
+        boolean refreshToken = false;
+        int times = 0;
+        do {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("begin_openid", nextOpenId);
+            result = HttpUtil.post(WechatApiUrls.BLACKLIST_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)), jsonObject.toJSONString());
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
+                break;
+            } else {
+                refreshToken = true;
+                times++;
+            }
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        return WechatResultHandler.result2Bean(result, WechatUserBlacklistResult.class);
+    }
+
+    /**
+     * 拉黑用户
+     * 一次拉黑最多允许20个
+     *
+     * @param openIdList 拉黑的列表
+     * @return true=成功
+     */
+    public boolean blackUser(List<String> openIdList) {
+        return blackResultOperate(openIdList, blackUserPost(openIdList));
+    }
+
+    /**
+     * 拉黑用户 实际接口调用
+     * accessToken超时重试
+     *
+     * @param openIdList 拉黑的列表
+     * @return 请求结果
+     */
+    private ErrorInfo blackUserPost(List<String> openIdList) {
+        String result;
+        boolean refreshToken = false;
+        int times = 0;
+        do {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("openid_list", openIdList);
+            result = HttpUtil.post(WechatApiUrls.BATCH_BLACK_USER_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)), jsonObject.toJSONString());
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
+                break;
+            } else {
+                refreshToken = true;
+                times++;
+            }
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
+    }
+
+    /**
+     * 取消拉黑用户
+     * 一次拉黑最多允许20个
+     *
+     * @param openIdList 取消拉黑的openId列表
+     * @return true=成功
+     */
+    public boolean unBlackUser(List<String> openIdList) {
+        return blackResultOperate(openIdList, unBlackUserPost(openIdList));
+    }
+
+    private boolean blackResultOperate(List<String> openIdList, ErrorInfo errorInfo) {
+        if (openIdList == null || openIdList.size() == 0 || openIdList.size() > 20) {
+            throw new WechatException("openId列表为空，或者超过20");
+        }
+        if (errorInfo.getErrorCode() == 0) {
+            errorInfo = null;
+            return true;
+        } else {
+            throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
+        }
+    }
+
+    /**
+     * 取消拉黑用户 实际接口调用
+     * accessToken超时重试
+     *
+     * @param openIdList 取消拉黑的openId列表
+     * @return 请求结果
+     */
+    private ErrorInfo unBlackUserPost(List<String> openIdList) {
+        String result;
+        boolean refreshToken = false;
+        int times = 0;
+        do {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("openid_list", openIdList);
+            result = HttpUtil.post(WechatApiUrls.BATCH_UNBLACK_USER_URL.replace("ACCESS_TOKEN",
+                    credentialHolder.getAccessToken(refreshToken)), jsonObject.toJSONString());
+            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
+                break;
+            } else {
+                refreshToken = true;
+                times++;
+            }
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
+    }
 
 }

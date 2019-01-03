@@ -16,7 +16,7 @@ public class UpdateWechatUserTag {
         tag.setName(tagName);
     }
 
-    public class UseTag {
+    private static class UseTag {
 
         /**
          * 标签id

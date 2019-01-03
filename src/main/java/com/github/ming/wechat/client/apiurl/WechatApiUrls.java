@@ -67,4 +67,24 @@ public class WechatApiUrls {
      * 批量获取用户基本信息
      */
     public static final String BATCH_GET_USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info/batchget?access_token=ACCESS_TOKEN";
+
+    /**
+     * 获取用户列表
+     */
+    public static final String USER_LIST_URL = "https://api.weixin.qq.com/cgi-bin/user/get?access_token=ACCESS_TOKEN&next_openid=NEXT_OPENID";
+
+    /**
+     * 获取公众号的黑名单列表
+     */
+    public static final String BLACKLIST_URL = "https://api.weixin.qq.com/cgi-bin/tags/members/getblacklist?access_token=ACCESS_TOKEN";
+
+    /**
+     * 拉黑用户（批量）
+     */
+    public static final String BATCH_BLACK_USER_URL = "https://api.weixin.qq.com/cgi-bin/tags/members/batchblacklist?access_token=ACCESS_TOKEN";
+
+    /**
+     * 取消拉黑用户（批量）
+     */
+    public static final String BATCH_UNBLACK_USER_URL = "https://api.weixin.qq.com/cgi-bin/tags/members/batchunblacklist?access_token=ACCESS_TOKEN";
 }

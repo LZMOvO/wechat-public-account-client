@@ -23,7 +23,7 @@ public class BatchGetWechatUserInfo {
         }
     }
 
-    private class OpenIdAndLang {
+    private static class OpenIdAndLang {
 
         @JSONField(name = "openid")
         private String openId;

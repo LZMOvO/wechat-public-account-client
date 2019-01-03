@@ -1,10 +1,14 @@
 package com.github.ming.wechat;
 
+import com.github.ming.wechat.client.WechatCredentialHolder;
 import com.github.ming.wechat.client.WechatUserClient;
 import com.github.ming.wechat.client.bean.user.WechatUser;
+import com.github.ming.wechat.client.bean.user.WechatUserOpenIdList;
 import com.github.ming.wechat.client.bean.user.WechatUserTag;
-import com.github.ming.wechat.client.config.WechatConfig;
 import com.github.ming.wechat.client.exception.WechatException;
+import com.github.ming.wechat.event.bean.WechatEvent;
+import com.github.ming.wechat.event.bean.WechatReply;
+import com.github.ming.wechat.event.handler.WechatMsgEventHandler;
 
 import java.util.List;
 
@@ -18,17 +22,17 @@ public class WechatClient {
 
     private final WechatUserClient userClient;
 
-    public WechatClient(String appId, String appSecret) {
-        WechatConfig.appId = appId;
-        WechatConfig.appSecret = appSecret;
-        userClient = WechatUserClient.getInstance();
-    }
+    private WechatMsgEventHandler msgEventHandler;
 
     public WechatClient(String appId, String appSecret, int timeoutRetry) {
-        WechatConfig.appId = appId;
-        WechatConfig.appSecret = appSecret;
-        WechatConfig.accessTokenTimeoutRetry = timeoutRetry;
-        userClient = WechatUserClient.getInstance();
+        WechatCredentialHolder credentialHolder = new WechatCredentialHolder(appId, appSecret, timeoutRetry);
+        userClient = new WechatUserClient(credentialHolder);
+    }
+
+    public WechatClient(String appId, String appSecret, int timeoutRetry, boolean openEncryption, String eventToken, String encodingAESKey) {
+        WechatCredentialHolder credentialHolder = new WechatCredentialHolder(appId, appSecret, timeoutRetry);
+        msgEventHandler = new WechatMsgEventHandler(openEncryption, appId, eventToken, encodingAESKey);
+        userClient = new WechatUserClient(credentialHolder);
     }
 
     /**
@@ -150,6 +154,83 @@ public class WechatClient {
      */
     public List<WechatUser> batchGetUserInfo(String lang, List<String> openIdList) throws WechatException {
         return userClient.batchGetUserInfo(lang, openIdList);
+    }
+
+    /**
+     * 获取用户列表
+     *
+     * @param nextOpenId 第一个拉取的OPENID，传空或""默认从头拉取
+     * @return 用户列表信息
+     */
+    public WechatUserOpenIdList userList(String nextOpenId) throws WechatException {
+        return userClient.userList(nextOpenId);
+    }
+
+    /**
+     * 获取公众号的黑名单列表
+     *
+     * @param nextOpenId 第一个拉取的OPENID，不填默认从头开始拉取
+     * @return 黑名单列表结果
+     */
+    public WechatUserOpenIdList blacklist(String nextOpenId) {
+        return userClient.blacklist(nextOpenId);
+    }
+
+    /**
+     * 拉黑用户
+     * 一次拉黑最多允许20个
+     *
+     * @param openIdList 拉黑的列表
+     * @return true=成功
+     */
+    public boolean blackUser(List<String> openIdList) {
+        return userClient.blackUser(openIdList);
+    }
+
+    /**
+     * 微信服务器验证
+     *
+     * @param signature 微信加密签名，signature结合了开发者填写的token参数和请求中的timestamp参数、nonce参数
+     * @param timestamp timestamp
+     * @param nonce     nonce
+     * @return true=验证成功
+     */
+    public boolean serverValidate(String signature, String timestamp, String nonce) {
+        if (msgEventHandler == null) {
+            throw new WechatException("未初始化WechatEventHandler");
+        }
+        return msgEventHandler.serverValidate(signature, timestamp, nonce);
+    }
+
+    /**
+     * 处理接收到的微信发来的消息、事件推送，由xml转为WechatEvent
+     * 加密消息、非加密消息皆可以用此方法处理，是否开启加密在WechatMsgEventHandler初始化的时候配置。
+     * 方法参数全部可从微信发来的消息推送的post请求中获取到，可直接在接收推送的post接口中设置相应参数获取，然后传入本方法即可。
+     *
+     * @param timestamp    timestamp
+     * @param nonce        nonce
+     * @param encryptType  encrypt_type
+     * @param msgSignature msg_signature
+     * @param requestBody  requestBody
+     * @return WechatEvent
+     */
+    public WechatEvent xml2WechatEvent(String timestamp, String nonce, String encryptType, String msgSignature,
+                                     String requestBody) throws WechatException {
+        if (msgEventHandler == null) {
+            throw new WechatException("未初始化WechatEventHandler");
+        }
+        return msgEventHandler.handleReceive(timestamp, nonce, encryptType, msgSignature, requestBody);
+    }
+
+    /**
+     * 微信发来的消息、事件推送的回复，由WechatReply转为xml
+     * 回复消息的加密消息、非加密消息皆可以用此方法处理，是否开启加密在WechatMsgEventHandler初始化的时候配置。
+     *
+     * @param reply 回复的内容bean
+     * @return xml字符串，开启加密的话即为加密后的xml字符串。
+     */
+    public String wechatReply2Xml(WechatReply reply) {
+        return msgEventHandler.wechatReply2Xml(reply);
     }
 
 }

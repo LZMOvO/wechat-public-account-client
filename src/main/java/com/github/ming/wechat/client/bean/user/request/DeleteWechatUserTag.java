@@ -15,7 +15,7 @@ public class DeleteWechatUserTag {
         tag.setId(tagId);
     }
 
-    public class UseTag {
+    private static class UseTag {
 
         /**
          * 标签id

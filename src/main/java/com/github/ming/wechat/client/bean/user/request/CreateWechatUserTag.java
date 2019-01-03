@@ -15,7 +15,7 @@ public class CreateWechatUserTag {
         tag.setName(tagName);
     }
 
-    public class UseTag {
+    private static class UseTag {
 
         /**
          * 标签名（30个字符以内）
