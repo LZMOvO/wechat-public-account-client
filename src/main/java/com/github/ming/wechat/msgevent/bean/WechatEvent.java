@@ -143,6 +143,12 @@ public class WechatEvent {
     private String eventKey;
 
     /**
+     * 菜单ID，如果是个性化菜单，则可以通过这个字段，知道是哪个规则的菜单被点击了
+     */
+    @XmlElement(name = "MenuId")
+    private Integer menuId;
+
+    /**
      * 二维码的ticket，可用来换取二维码图片
      */
     @XmlElement(name = "Ticket")
@@ -165,6 +171,60 @@ public class WechatEvent {
      */
     @XmlElement(name = "Precision")
     private String precision;
+
+    /**
+     * 扫描信息
+     */
+    @XmlElement(name = "Precision")
+    private String scanCodeInfo;
+
+    /**
+     * 扫描类型，一般是qrcode
+     */
+    @XmlElement(name = "ScanType")
+    private String scanType;
+
+    /**
+     * 扫描结果，即二维码对应的字符串信息
+     */
+    @XmlElement(name = "ScanResult")
+    private String scanResult;
+
+    /**
+     * 发送的图片信息
+     */
+    @XmlElement(name = "SendPicsInfo")
+    private String sendPicsInfo;
+
+    /**
+     * 发送的图片数量
+     */
+    @XmlElement(name = "Count")
+    private String count;
+
+    /**
+     * 图片列表
+     */
+    @XmlElement(name = "PicList")
+    private String picList;
+
+    /**
+     * 图片的MD5值，开发者若需要，可用于验证接收到图片
+     */
+    @XmlElement(name = "PicMd5Sum")
+    private String picMd5Sum;
+
+    /**
+     * 发送的位置信息
+     */
+    @XmlElement(name = "SendLocationInfo")
+    private String sendLocationInfo;
+
+    /**
+     * 朋友圈POI的名字，可能为空
+     */
+    @XmlElement(name = "Poiname")
+    private String poiname;
 
     public String getToUserName() {
         return toUserName;
@@ -326,6 +386,14 @@ public class WechatEvent {
         this.eventKey = eventKey;
     }
 
+    public Integer getMenuId() {
+        return menuId;
+    }
+
+    public void setMenuId(Integer menuId) {
+        this.menuId = menuId;
+    }
+
     public String getTicket() {
         return ticket;
     }
@@ -356,5 +424,77 @@ public class WechatEvent {
 
     public void setPrecision(String precision) {
         this.precision = precision;
+    }
+
+    public String getScanCodeInfo() {
+        return scanCodeInfo;
+    }
+
+    public void setScanCodeInfo(String scanCodeInfo) {
+        this.scanCodeInfo = scanCodeInfo;
+    }
+
+    public String getScanType() {
+        return scanType;
+    }
+
+    public void setScanType(String scanType) {
+        this.scanType = scanType;
+    }
+
+    public String getScanResult() {
+        return scanResult;
+    }
+
+    public void setScanResult(String scanResult) {
+        this.scanResult = scanResult;
+    }
+
+    public String getSendPicsInfo() {
+        return sendPicsInfo;
+    }
+
+    public void setSendPicsInfo(String sendPicsInfo) {
+        this.sendPicsInfo = sendPicsInfo;
+    }
+
+    public String getCount() {
+        return count;
+    }
+
+    public void setCount(String count) {
+        this.count = count;
+    }
+
+    public String getPicList() {
+        return picList;
+    }
+
+    public void setPicList(String picList) {
+        this.picList = picList;
+    }
+
+    public String getPicMd5Sum() {
+        return picMd5Sum;
+    }
+
+    public void setPicMd5Sum(String picMd5Sum) {
+        this.picMd5Sum = picMd5Sum;
+    }
+
+    public String getSendLocationInfo() {
+        return sendLocationInfo;
+    }
+
+    public void setSendLocationInfo(String sendLocationInfo) {
+        this.sendLocationInfo = sendLocationInfo;
+    }
+
+    public String getPoiname() {
+        return poiname;
+    }
+
+    public void setPoiname(String poiname) {
+        this.poiname = poiname;
     }
 }

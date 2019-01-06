@@ -1,7 +1,11 @@
 package com.github.ming.wechat;
 
 import com.github.ming.wechat.client.WechatCredentialHolder;
+import com.github.ming.wechat.client.WechatMenuClient;
 import com.github.ming.wechat.client.WechatUserClient;
+import com.github.ming.wechat.client.bean.menu.WechatMenuButton;
+import com.github.ming.wechat.client.bean.menu.WechatMenuButtonGroup;
+import com.github.ming.wechat.client.bean.menu.response.WechatMenusResult;
 import com.github.ming.wechat.client.bean.user.WechatUser;
 import com.github.ming.wechat.client.bean.user.WechatUserOpenIdList;
 import com.github.ming.wechat.client.bean.user.WechatUserTag;
@@ -20,20 +24,74 @@ import java.util.List;
  */
 public class WechatClient {
 
+    private WechatMenuClient menuClient;
+
     private final WechatUserClient userClient;
 
     private WechatMsgEventHandler msgEventHandler;
 
-    public WechatClient(String appId, String appSecret, int timeoutRetry) {
-        WechatCredentialHolder credentialHolder = new WechatCredentialHolder(appId, appSecret, timeoutRetry);
-        userClient = new WechatUserClient(credentialHolder);
+    /*---- 菜单管理 ----*/
+
+    /**
+     * 自定义菜单创建
+     * 自定义菜单最多包括3个一级菜单，每个一级菜单最多包含5个二级菜单
+     *
+     * @param menuButtonList 创建菜单参数
+     * @return true=成功
+     */
+    public boolean createMenu(List<WechatMenuButton> menuButtonList) throws WechatException {
+        return menuClient.createMenu(menuButtonList);
     }
 
-    public WechatClient(String appId, String appSecret, int timeoutRetry, boolean openEncryption, String eventToken, String encodingAESKey) {
-        WechatCredentialHolder credentialHolder = new WechatCredentialHolder(appId, appSecret, timeoutRetry);
-        msgEventHandler = new WechatMsgEventHandler(openEncryption, appId, eventToken, encodingAESKey);
-        userClient = new WechatUserClient(credentialHolder);
+    /**
+     * 自定义菜单查询
+     *
+     * @return 菜单列表
+     */
+    public WechatMenusResult menus() throws WechatException {
+        return menuClient.menus();
     }
+
+    /**
+     * 自定义菜单删除
+     *
+     * @return true=成功
+     */
+    public boolean deleteMenus() throws WechatException {
+        return menuClient.deleteMenus();
+    }
+
+    /**
+     * 创建个性化菜单
+     * 自定义菜单最多包括3个一级菜单，每个一级菜单最多包含5个二级菜单
+     *
+     * @param wechatMenuButtonGroup 个性化菜单参数
+     * @return true=成功
+     */
+    public boolean createConditionalMenu(WechatMenuButtonGroup wechatMenuButtonGroup) throws WechatException {
+        return menuClient.createConditionalMenu(wechatMenuButtonGroup);
+    }
+
+    /**
+     * 删除个性化菜单
+     *
+     * @return true=成功
+     */
+    public boolean deleteConditionalMenus(int menuId) throws WechatException {
+        return menuClient.deleteConditionalMenus(menuId);
+    }
+
+    /**
+     * 测试个性化菜单匹配结果
+     *
+     * @param userId user_id可以是粉丝的OpenID，也可以是粉丝的微信号
+     * @return 请求结果
+     */
+    public WechatMenuButtonGroup tryMatchMenu(String userId) throws WechatException {
+        return menuClient.tryMatchMenu(userId);
+    }
+
+    /*---- 用户管理 ----*/
 
     /**
      * 创建标签
@@ -184,7 +242,18 @@ public class WechatClient {
      * @return true=成功
      */
     public boolean blackUser(List<String> openIdList) {
-        return userClient.blackUser(openIdList);
+        return userClient.blackUserOperate(true, openIdList);
+    }
+
+    /**
+     * 取消拉黑用户
+     * 一次拉黑最多允许20个
+     *
+     * @param openIdList 取消拉黑的列表
+     * @return true=成功
+     */
+    public boolean unblackUser(List<String> openIdList) {
+        return userClient.blackUserOperate(false, openIdList);
     }
 
     /**
@@ -231,6 +300,19 @@ public class WechatClient {
      */
     public String wechatReply2Xml(WechatReply reply) {
         return msgEventHandler.wechatReply2Xml(reply);
+    }
+
+    public WechatClient(String appId, String appSecret, int timeoutRetry) {
+        WechatCredentialHolder credentialHolder = new WechatCredentialHolder(appId, appSecret, timeoutRetry);
+        menuClient = new WechatMenuClient(credentialHolder);
+        userClient = new WechatUserClient(credentialHolder);
+    }
+
+    public WechatClient(String appId, String appSecret, int timeoutRetry, boolean openEncryption, String eventToken, String encodingAESKey) {
+        WechatCredentialHolder credentialHolder = new WechatCredentialHolder(appId, appSecret, timeoutRetry);
+        msgEventHandler = new WechatMsgEventHandler(openEncryption, appId, eventToken, encodingAESKey);
+        menuClient = new WechatMenuClient(credentialHolder);
+        userClient = new WechatUserClient(credentialHolder);
     }
 
 }

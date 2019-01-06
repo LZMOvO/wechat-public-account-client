@@ -85,7 +85,7 @@ public final class WechatUserClient {
     }
 
     /**
-     * 获取公众号已创建的标签 实际接口调用
+     * 获取公众号已创建的标签 接口实际调用
      * accessToken超时重试
      *
      * @return 按照微信返回格式创建的list
@@ -189,8 +189,7 @@ public final class WechatUserClient {
         int times = 0;
         do {
             result = HttpUtil.post(WechatApiUrls.DELETE_USER_TAG_URL.replace("ACCESS_TOKEN",
-                    credentialHolder.getAccessToken(refreshToken)),
-                    JSON.toJSONString(deleteUserTag));
+                    credentialHolder.getAccessToken(refreshToken)), JSON.toJSONString(deleteUserTag));
             if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
@@ -230,8 +229,7 @@ public final class WechatUserClient {
         int times = 0;
         do {
             result = HttpUtil.post(WechatApiUrls.USER_TAGS_FANS_URL.replace("ACCESS_TOKEN",
-                    credentialHolder.getAccessToken(refreshToken)),
-                    JSON.toJSONString(getWechatUserTagFans));
+                    credentialHolder.getAccessToken(refreshToken)), JSON.toJSONString(getWechatUserTagFans));
             if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
@@ -595,57 +593,17 @@ public final class WechatUserClient {
     }
 
     /**
-     * 拉黑用户
+     * 拉黑用户/取消拉黑用户
      * 一次拉黑最多允许20个
      *
-     * @param openIdList 拉黑的列表
+     * @param openIdList 拉黑/取消拉黑的列表
      * @return true=成功
      */
-    public boolean blackUser(List<String> openIdList) {
-        return blackResultOperate(openIdList, blackUserPost(openIdList));
-    }
-
-    /**
-     * 拉黑用户 实际接口调用
-     * accessToken超时重试
-     *
-     * @param openIdList 拉黑的列表
-     * @return 请求结果
-     */
-    private ErrorInfo blackUserPost(List<String> openIdList) {
-        String result;
-        boolean refreshToken = false;
-        int times = 0;
-        do {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("openid_list", openIdList);
-            result = HttpUtil.post(WechatApiUrls.BATCH_BLACK_USER_URL.replace("ACCESS_TOKEN",
-                    credentialHolder.getAccessToken(refreshToken)), jsonObject.toJSONString());
-            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
-                break;
-            } else {
-                refreshToken = true;
-                times++;
-            }
-        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
-        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
-    }
-
-    /**
-     * 取消拉黑用户
-     * 一次拉黑最多允许20个
-     *
-     * @param openIdList 取消拉黑的openId列表
-     * @return true=成功
-     */
-    public boolean unBlackUser(List<String> openIdList) {
-        return blackResultOperate(openIdList, unBlackUserPost(openIdList));
-    }
-
-    private boolean blackResultOperate(List<String> openIdList, ErrorInfo errorInfo) {
+    public boolean blackUserOperate(boolean operate, List<String> openIdList) {
         if (openIdList == null || openIdList.size() == 0 || openIdList.size() > 20) {
             throw new WechatException("openId列表为空，或者超过20");
         }
+        ErrorInfo errorInfo = blackUserOperatePost(operate, openIdList);
         if (errorInfo.getErrorCode() == 0) {
             errorInfo = null;
             return true;
@@ -655,21 +613,27 @@ public final class WechatUserClient {
     }
 
     /**
-     * 取消拉黑用户 实际接口调用
+     * 拉黑用户/取消拉黑用户 实际接口调用
      * accessToken超时重试
      *
-     * @param openIdList 取消拉黑的openId列表
+     * @param operate    true=拉黑用户；false=取消拉黑用户
+     * @param openIdList 拉黑/取消拉黑的列表
      * @return 请求结果
      */
-    private ErrorInfo unBlackUserPost(List<String> openIdList) {
+    private ErrorInfo blackUserOperatePost(boolean operate, List<String> openIdList) {
         String result;
         boolean refreshToken = false;
         int times = 0;
+        JSONObject params = new JSONObject();
+        params.put("openid_list", openIdList);
         do {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("openid_list", openIdList);
-            result = HttpUtil.post(WechatApiUrls.BATCH_UNBLACK_USER_URL.replace("ACCESS_TOKEN",
-                    credentialHolder.getAccessToken(refreshToken)), jsonObject.toJSONString());
+            if (operate) {
+                result = HttpUtil.post(WechatApiUrls.BATCH_BLACK_USER_URL.replace("ACCESS_TOKEN",
+                        credentialHolder.getAccessToken(refreshToken)), params.toJSONString());
+            } else {
+                result = HttpUtil.post(WechatApiUrls.BATCH_UNBLACK_USER_URL.replace("ACCESS_TOKEN",
+                        credentialHolder.getAccessToken(refreshToken)), params.toJSONString());
+            }
             if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
                 break;
             } else {
@@ -677,6 +641,7 @@ public final class WechatUserClient {
                 times++;
             }
         } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        params = null;
         return WechatResultHandler.result2Bean(result, ErrorInfo.class);
     }
 

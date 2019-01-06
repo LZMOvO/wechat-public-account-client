@@ -9,6 +9,36 @@ package com.github.ming.wechat.client.apiurl;
 public class WechatApiUrls {
 
     /**
+     * 自定义菜单创建接口
+     */
+    public static final String CREATE_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=ACCESS_TOKEN";
+
+    /**
+     * 自定义菜单查询接口
+     */
+    public static final String GET_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/get?access_token=ACCESS_TOKEN";
+
+    /**
+     * 自定义菜单删除接口
+     */
+    public static final String DELETE_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=ACCESS_TOKEN";
+
+    /**
+     * 测试个性化菜单匹配结果
+     */
+    public static final String TRY_MATCH_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/trymatch?access_token=ACCESS_TOKEN";
+
+    /**
+     * 创建个性化菜单
+     */
+    public static final String CREATE_CONDITIONAL_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/addconditional?access_token=ACCESS_TOKEN";
+
+    /**
+     * 删除个性化菜单
+     */
+    public static final String DELETE_CONDITIONAL_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/delconditional?access_token=ACCESS_TOKEN";
+
+    /**
      * 获取access_token接口地址
      */
     public static final String ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET";
