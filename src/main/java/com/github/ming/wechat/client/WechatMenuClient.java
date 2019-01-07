@@ -1,18 +1,16 @@
 package com.github.ming.wechat.client;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.github.ming.wechat.client.apiurl.WechatApiUrls;
 import com.github.ming.wechat.client.bean.menu.WechatMenuButton;
 import com.github.ming.wechat.client.bean.menu.WechatMenuButtonGroup;
 import com.github.ming.wechat.client.bean.menu.response.WechatMenusResult;
 import com.github.ming.wechat.client.bean.result.ErrorInfo;
 import com.github.ming.wechat.client.exception.WechatException;
-import com.github.ming.wechat.client.handler.WechatResultHandler;
-import com.github.ming.wechat.util.HttpUtil;
 import com.github.ming.wechat.util.StringUtil;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 自定义菜单
@@ -41,39 +39,10 @@ public class WechatMenuClient {
         if (menuButtonList == null || menuButtonList.size() == 0) {
             throw new WechatException("创建菜单的内容为空");
         }
-        ErrorInfo errorInfo = createMenuPost(menuButtonList);
-        if (errorInfo.getErrorCode() == 0) {
-            errorInfo = null;
-            return true;
-        } else {
-            throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
-        }
-    }
-
-    /**
-     * 自定义菜单创建 实际接口调用
-     * accessToken超时重试
-     *
-     * @param menuButtonList 创建菜单参数
-     */
-    private ErrorInfo createMenuPost(List<WechatMenuButton> menuButtonList) {
-        String result;
-        boolean refreshToken = false;
-        int times = 0;
-        JSONObject params = new JSONObject();
+        Map<String, Object> params = new HashMap<>(3);
         params.put("button", menuButtonList);
-        do {
-            result = HttpUtil.post(WechatApiUrls.CREATE_MENU_URL.replace("ACCESS_TOKEN",
-                    credentialHolder.getAccessToken(refreshToken)), params.toJSONString());
-            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
-                break;
-            } else {
-                refreshToken = true;
-                ++times;
-            }
-        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
-        params = null;
-        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
+        String result = WechatRequest.post(WechatApiUrls.CREATE_MENU_URL, params, credentialHolder);
+        return errorInfo2Boolean(result);
     }
 
     /**
@@ -82,30 +51,8 @@ public class WechatMenuClient {
      * @return 标签列表
      */
     public WechatMenusResult menus() throws WechatException {
-        return menusGet();
-    }
-
-    /**
-     * 自定义菜单查询 实际接口调用
-     * accessToken超时重试
-     *
-     * @return 按照微信返回格式创建的list
-     */
-    private WechatMenusResult menusGet() {
-        String result;
-        boolean refreshToken = false;
-        int times = 0;
-        do {
-            result = HttpUtil.get(WechatApiUrls.GET_MENU_URL.replace("ACCESS_TOKEN",
-                    credentialHolder.getAccessToken(refreshToken)));
-            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
-                break;
-            } else {
-                refreshToken = true;
-                times++;
-            }
-        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
-        return WechatResultHandler.result2Bean(result, WechatMenusResult.class);
+        String result = WechatRequest.get(WechatApiUrls.GET_MENU_URL, credentialHolder);
+        return WechatResponse.result2Bean(result, WechatMenusResult.class);
     }
 
     /**
@@ -115,36 +62,8 @@ public class WechatMenuClient {
      * @return true=成功
      */
     public boolean deleteMenus() throws WechatException {
-        ErrorInfo errorInfo = deleteMenusGet();
-        if (errorInfo.getErrorCode() == 0) {
-            errorInfo = null;
-            return true;
-        } else {
-            throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
-        }
-    }
-
-    /**
-     * 自定义菜单删除 接口实际调用
-     * accessToken超时重试
-     *
-     * @return 请求结果
-     */
-    private ErrorInfo deleteMenusGet() {
-        String result;
-        boolean refreshToken = false;
-        int times = 0;
-        do {
-            result = HttpUtil.get(WechatApiUrls.DELETE_MENU_URL.replace("ACCESS_TOKEN",
-                    credentialHolder.getAccessToken(refreshToken)));
-            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
-                break;
-            } else {
-                refreshToken = true;
-                times++;
-            }
-        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
-        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
+        String result = WechatRequest.get(WechatApiUrls.DELETE_MENU_URL, credentialHolder);
+        return errorInfo2Boolean(result);
     }
 
     /*---- 个性化菜单 ----*/
@@ -159,38 +78,9 @@ public class WechatMenuClient {
         if (wechatMenuButtonGroup == null) {
             throw new WechatException("创建菜单的内容为空");
         }
-        ErrorInfo errorInfo = createConditionalMenuPost(wechatMenuButtonGroup);
-        if (errorInfo.getErrorCode() == 0) {
-            errorInfo = null;
-            return true;
-        } else {
-            throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
-        }
+        String result = WechatRequest.post(WechatApiUrls.CREATE_CONDITIONAL_MENU_URL, wechatMenuButtonGroup, credentialHolder);
+        return errorInfo2Boolean(result);
     }
-
-    /**
-     * 创建个性化菜单 实际接口调用
-     * accessToken超时重试
-     *
-     * @param wechatMenuButtonGroup 个性化菜单参数
-     */
-    private ErrorInfo createConditionalMenuPost(WechatMenuButtonGroup wechatMenuButtonGroup) {
-        String result;
-        boolean refreshToken = false;
-        int times = 0;
-        do {
-            result = HttpUtil.post(WechatApiUrls.CREATE_CONDITIONAL_MENU_URL.replace("ACCESS_TOKEN",
-                    credentialHolder.getAccessToken(refreshToken)), JSON.toJSONString(wechatMenuButtonGroup));
-            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
-                break;
-            } else {
-                refreshToken = true;
-                ++times;
-            }
-        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
-        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
-    }
-
 
     /**
      * 删除个性化菜单
@@ -198,41 +88,11 @@ public class WechatMenuClient {
      * @return true=成功
      */
     public boolean deleteConditionalMenus(int menuId) throws WechatException {
-        ErrorInfo errorInfo = deleteConditionalMenusPost(menuId);
-        if (errorInfo.getErrorCode() == 0) {
-            errorInfo = null;
-            return true;
-        } else {
-            throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
-        }
-    }
-
-    /**
-     * 删除个性化菜单 接口实际调用
-     * accessToken超时重试
-     *
-     * @return 请求结果
-     */
-    private ErrorInfo deleteConditionalMenusPost(int menuId) {
-        String result;
-        boolean refreshToken = false;
-        int times = 0;
-        JSONObject params = new JSONObject(3);
+        Map<String, Object> params = new HashMap<>(3);
         params.put("menuid", menuId);
-        do {
-            result = HttpUtil.post(WechatApiUrls.DELETE_CONDITIONAL_MENU_URL.replace("ACCESS_TOKEN",
-                    credentialHolder.getAccessToken(refreshToken)), params.toJSONString());
-            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
-                break;
-            } else {
-                refreshToken = true;
-                times++;
-            }
-        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
-        params = null;
-        return WechatResultHandler.result2Bean(result, ErrorInfo.class);
+        String result = WechatRequest.post(WechatApiUrls.DELETE_CONDITIONAL_MENU_URL, params, credentialHolder);
+        return errorInfo2Boolean(result);
     }
-
 
     /**
      * 测试个性化菜单匹配结果
@@ -244,34 +104,21 @@ public class WechatMenuClient {
         if (StringUtil.isBlank(userId)) {
             throw new WechatException("userId为空");
         }
-        return tryMatchMenuPost(userId);
+        Map<String, Object> params = new HashMap<>(3);
+        params.put("user_id", userId);
+        String result = WechatRequest.post(WechatApiUrls.TRY_MATCH_MENU_URL, params, credentialHolder);
+        params = null;
+        return WechatResponse.result2Bean(result, WechatMenuButtonGroup.class);
     }
 
-    /**
-     * 测试个性化菜单匹配结果 接口实际调用
-     * accessToken超时重试
-     *
-     * @param userId user_id可以是粉丝的OpenID，也可以是粉丝的微信号
-     * @return 请求结果
-     */
-    private WechatMenuButtonGroup tryMatchMenuPost(String userId) {
-        String result;
-        boolean refreshToken = false;
-        int times = 0;
-        JSONObject params = new JSONObject(3);
-        params.put("user_id", userId);
-        do {
-            result = HttpUtil.post(WechatApiUrls.TRY_MATCH_MENU_URL.replace("ACCESS_TOKEN",
-                    credentialHolder.getAccessToken(refreshToken)), params.toJSONString());
-            if (!WechatResultHandler.judgeAccessTokenTimeout(result)) {
-                break;
-            } else {
-                refreshToken = true;
-                times++;
-            }
-        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
-        params = null;
-        return WechatResultHandler.result2Bean(result, WechatMenuButtonGroup.class);
+    private boolean errorInfo2Boolean(String result) {
+        ErrorInfo errorInfo = WechatResponse.result2Bean(result, ErrorInfo.class);
+        if (errorInfo.getErrorCode() == 0) {
+            errorInfo = null;
+            return true;
+        } else {
+            throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
+        }
     }
 
 }

@@ -3,7 +3,6 @@ package com.github.ming.wechat.client;
 import com.github.ming.wechat.client.apiurl.WechatApiUrls;
 import com.github.ming.wechat.client.bean.credential.WechatAccessToken;
 import com.github.ming.wechat.client.bean.credential.wrapper.WechatAccessTokenWrapper;
-import com.github.ming.wechat.client.handler.WechatResultHandler;
 import com.github.ming.wechat.util.HttpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +91,7 @@ public class WechatCredentialHolder {
     private WechatAccessToken accessTokenGet() {
         String result = HttpUtil.get(WechatApiUrls.ACCESS_TOKEN_URL.replace("APPID", this.appId)
                 .replace("APPSECRET", this.appSecret));
-        return WechatResultHandler.result2Bean(result, WechatAccessToken.class);
+        return WechatResponse.result2Bean(result, WechatAccessToken.class);
     }
 
     int getAccessTokenTimeoutRetry() {

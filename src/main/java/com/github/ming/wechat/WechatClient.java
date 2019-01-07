@@ -1,8 +1,10 @@
 package com.github.ming.wechat;
 
 import com.github.ming.wechat.client.WechatCredentialHolder;
+import com.github.ming.wechat.client.WechatMediaClient;
 import com.github.ming.wechat.client.WechatMenuClient;
 import com.github.ming.wechat.client.WechatUserClient;
+import com.github.ming.wechat.client.bean.media.WechatMediaInfo;
 import com.github.ming.wechat.client.bean.menu.WechatMenuButton;
 import com.github.ming.wechat.client.bean.menu.WechatMenuButtonGroup;
 import com.github.ming.wechat.client.bean.menu.response.WechatMenusResult;
@@ -14,6 +16,7 @@ import com.github.ming.wechat.msgevent.bean.WechatEvent;
 import com.github.ming.wechat.msgevent.bean.WechatReply;
 import com.github.ming.wechat.msgevent.handler.WechatMsgEventHandler;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -24,11 +27,28 @@ import java.util.List;
  */
 public class WechatClient {
 
-    private WechatMenuClient menuClient;
+    private final WechatMenuClient menuClient;
 
     private final WechatUserClient userClient;
 
+    private final WechatMediaClient mediaClient;
+
     private WechatMsgEventHandler msgEventHandler;
+
+    public WechatClient(String appId, String appSecret, int timeoutRetry) {
+        WechatCredentialHolder credentialHolder = new WechatCredentialHolder(appId, appSecret, timeoutRetry);
+        menuClient = new WechatMenuClient(credentialHolder);
+        userClient = new WechatUserClient(credentialHolder);
+        mediaClient = new WechatMediaClient(credentialHolder);
+    }
+
+    public WechatClient(String appId, String appSecret, int timeoutRetry, boolean openEncryption, String eventToken, String encodingAESKey) {
+        WechatCredentialHolder credentialHolder = new WechatCredentialHolder(appId, appSecret, timeoutRetry);
+        msgEventHandler = new WechatMsgEventHandler(openEncryption, appId, eventToken, encodingAESKey);
+        menuClient = new WechatMenuClient(credentialHolder);
+        userClient = new WechatUserClient(credentialHolder);
+        mediaClient = new WechatMediaClient(credentialHolder);
+    }
 
     /*---- 菜单管理 ----*/
 
@@ -185,7 +205,6 @@ public class WechatClient {
      * @param openId     用户openid
      * @param remarkName 备注名
      * @return true=成功
-     * @throws WechatException
      */
     public boolean updateUserRemarkName(String openId, String remarkName) throws WechatException {
         return userClient.updateUserRemarkName(openId, remarkName);
@@ -207,8 +226,7 @@ public class WechatClient {
      *
      * @param lang       返回国家地区语言版本，zh_CN 简体，zh_TW 繁体，en 英语，传其他内容返回简体
      * @param openIdList 批量获取用户信息的用户openId的list
-     * @return
-     * @throws WechatException
+     * @return 用户信息列表
      */
     public List<WechatUser> batchGetUserInfo(String lang, List<String> openIdList) throws WechatException {
         return userClient.batchGetUserInfo(lang, openIdList);
@@ -256,6 +274,26 @@ public class WechatClient {
         return userClient.blackUserOperate(false, openIdList);
     }
 
+    /*---- 素材管理 ----*/
+
+    /**
+     * 新增临时素材
+     * 媒体文件在微信后台保存时间为3天，即3天后media_id失效
+     *
+     * @param file 图片（image）: 2M，支持PNG\JPEG\JPG\GIF格式；
+     *             语音（voice）：2M，播放长度不超过60s，支持AMR\MP3格式；
+     *             视频（video）：10MB，支持MP4格式；缩略图（thumb）：64KB，支持JPG格式
+     * @param type 媒体文件类型，分别有图片（image）、语音（voice）、视频（video）和缩略图（thumb）
+     * @return 上传结果
+     */
+    public WechatMediaInfo mediaUpload(File file, String type) throws WechatException {
+        return mediaClient.mediaUpload(file, type);
+    }
+
+
+
+    /*---- 接收消息、事件 ----*/
+
     /**
      * 微信服务器验证
      *
@@ -300,19 +338,6 @@ public class WechatClient {
      */
     public String wechatReply2Xml(WechatReply reply) {
         return msgEventHandler.wechatReply2Xml(reply);
-    }
-
-    public WechatClient(String appId, String appSecret, int timeoutRetry) {
-        WechatCredentialHolder credentialHolder = new WechatCredentialHolder(appId, appSecret, timeoutRetry);
-        menuClient = new WechatMenuClient(credentialHolder);
-        userClient = new WechatUserClient(credentialHolder);
-    }
-
-    public WechatClient(String appId, String appSecret, int timeoutRetry, boolean openEncryption, String eventToken, String encodingAESKey) {
-        WechatCredentialHolder credentialHolder = new WechatCredentialHolder(appId, appSecret, timeoutRetry);
-        msgEventHandler = new WechatMsgEventHandler(openEncryption, appId, eventToken, encodingAESKey);
-        menuClient = new WechatMenuClient(credentialHolder);
-        userClient = new WechatUserClient(credentialHolder);
     }
 
 }

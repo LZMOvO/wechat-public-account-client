@@ -92,9 +92,10 @@ public class HttpUtil {
     public static String get(String url, Map<String, Object> params) {
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setPath(url);
-        uriBuilder.setParameters(params2NVPs(params));
+        uriBuilder.setParameters(map2NameValuePairs(params));
         try {
             HttpGet httpGet = new HttpGet(uriBuilder.build());
+            System.out.println(httpGet.getURI());
             return httpResult(httpGet);
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -113,7 +114,7 @@ public class HttpUtil {
     public static String get(String url, Map<String, Object> headers, Map<String, Object> params) {
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setPath(url);
-        uriBuilder.setParameters(params2NVPs(params));
+        uriBuilder.setParameters(map2NameValuePairs(params));
         try {
             HttpGet httpGet = new HttpGet(uriBuilder.build());
             if (headers != null && headers.size() > 0) {
@@ -149,7 +150,7 @@ public class HttpUtil {
     public static String post(String url, Map<String, Object> params) {
         try {
             HttpPost httpPost = new HttpPost(url);
-            httpPost.setEntity(new UrlEncodedFormEntity(params2NVPs(params), "UTF-8"));
+            httpPost.setEntity(new UrlEncodedFormEntity(map2NameValuePairs(params), "UTF-8"));
             return httpResult(httpPost);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -173,7 +174,7 @@ public class HttpUtil {
                     httpPost.setHeader(entry.getKey(), String.valueOf(entry.getValue()));
                 }
             }
-            httpPost.setEntity(new UrlEncodedFormEntity(params2NVPs(params), "UTF-8"));
+            httpPost.setEntity(new UrlEncodedFormEntity(map2NameValuePairs(params), "UTF-8"));
             return httpResult(httpPost);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -267,7 +268,7 @@ public class HttpUtil {
      * @param file 待上传文件
      * @return
      */
-    public static String uploadForWeixinMedia(String url, File file) {
+    public static String uploadForWechat(String url, File file) {
         if (file == null || file.length() == 0) {
             return null;
         }
@@ -382,7 +383,7 @@ public class HttpUtil {
      * @param params 待转换的参数
      * @return
      */
-    private static List<NameValuePair> params2NVPs(Map<String, Object> params) {
+    private static List<NameValuePair> map2NameValuePairs(Map<String, Object> params) {
         List<NameValuePair> nvpList = new ArrayList<NameValuePair>();
         if (params != null && params.size() > 0) {
             for (Entry<String, Object> param : params.entrySet()) {

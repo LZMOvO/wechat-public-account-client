@@ -1,4 +1,4 @@
-package com.github.ming.wechat.client.handler;
+package com.github.ming.wechat.client;
 
 import com.alibaba.fastjson.JSON;
 import com.github.ming.wechat.client.bean.result.ErrorInfo;
@@ -12,7 +12,7 @@ import com.github.ming.wechat.util.StringUtil;
  * @author : Liu Zeming
  * @date : 2019-01-02 22:54
  */
-public class WechatResultHandler {
+public class WechatResponse {
     /**
      * 从请求结果中判断请求失败的标识
      */
@@ -50,7 +50,8 @@ public class WechatResultHandler {
         if (!StringUtil.isBlank(result) && result.contains(RESULT_FAULT_FLAG)) {
             ErrorInfo errorInfo = JSON.parseObject(result, ErrorInfo.class);
             return errorInfo.getErrorCode() == WechatReturnCode.IllegalAccessToken.getCode() ||
-                    errorInfo.getErrorCode() == WechatReturnCode.ObtainAccessTokenError.getCode();
+                    errorInfo.getErrorCode() == WechatReturnCode.ObtainAccessTokenError.getCode() ||
+                    errorInfo.getErrorCode() == WechatReturnCode.AccessTokenOvertime.getCode();
         } else {
             return false;
         }
