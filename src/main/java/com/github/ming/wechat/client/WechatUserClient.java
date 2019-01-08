@@ -72,7 +72,7 @@ public final class WechatUserClient {
             throw new WechatException("标签名为空");
         }
         String result = WechatRequest.post(WechatApiUrls.UPDATE_USER_TAG_URL, new UpdateWechatUserTag(id, name), credentialHolder);
-        return errorInfo2Boolean(result);
+        return WechatResponse.errorInfo2Boolean(result);
     }
 
     /**
@@ -88,7 +88,7 @@ public final class WechatUserClient {
             throw new WechatException("标签id错误");
         }
         String result = WechatRequest.post(WechatApiUrls.DELETE_USER_TAG_URL, new DeleteWechatUserTag(id), credentialHolder);
-        return errorInfo2Boolean(result);
+        return WechatResponse.errorInfo2Boolean(result);
     }
 
     /**
@@ -123,7 +123,7 @@ public final class WechatUserClient {
             throw new WechatException("传入的openId有误，为空或者超过50个");
         }
         String result = WechatRequest.post(WechatApiUrls.BATCH_SET_USER_TAG_URL, new BatchOperateWechatUserTag(tagId, openIdList), credentialHolder);
-        return errorInfo2Boolean(result);
+        return WechatResponse.errorInfo2Boolean(result);
     }
 
     /**
@@ -141,7 +141,7 @@ public final class WechatUserClient {
             throw new WechatException("传入的openId有误，为空或者超过50个");
         }
         String result = WechatRequest.post(WechatApiUrls.BATCH_CANCEL_USER_TAG_URL, new BatchOperateWechatUserTag(tagId, openIdList), credentialHolder);
-        return errorInfo2Boolean(result);
+        return WechatResponse.errorInfo2Boolean(result);
     }
 
     /**
@@ -284,10 +284,6 @@ public final class WechatUserClient {
             params = null;
             throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
         }
-    }
-
-    private boolean errorInfo2Boolean(String result) {
-        return errorInfo2Boolean(result);
     }
 
 }

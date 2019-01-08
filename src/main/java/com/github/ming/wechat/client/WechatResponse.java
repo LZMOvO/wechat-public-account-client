@@ -12,7 +12,7 @@ import com.github.ming.wechat.util.StringUtil;
  * @author : Liu Zeming
  * @date : 2019-01-02 22:54
  */
-public class WechatResponse {
+class WechatResponse {
     /**
      * 从请求结果中判断请求失败的标识
      */
@@ -27,7 +27,7 @@ public class WechatResponse {
      * @return
      * @throws WechatException 微信错误异常信息
      */
-    public static <T> T result2Bean(String wechatResult, Class<T> clazz) throws WechatException {
+    static <T> T result2Bean(String wechatResult, Class<T> clazz) throws WechatException {
         if (StringUtil.isBlank(wechatResult)) {
             throw new WechatException("微信api请求结果为空");
         }
@@ -46,7 +46,7 @@ public class WechatResponse {
      * @param result 微信请求失败的错误码
      * @return true=是accessToken超时；false=不是
      */
-    public static boolean judgeAccessTokenTimeout(String result) {
+    static boolean judgeAccessTokenTimeout(String result) {
         if (!StringUtil.isBlank(result) && result.contains(RESULT_FAULT_FLAG)) {
             ErrorInfo errorInfo = JSON.parseObject(result, ErrorInfo.class);
             return errorInfo.getErrorCode() == WechatReturnCode.IllegalAccessToken.getCode() ||
@@ -54,6 +54,16 @@ public class WechatResponse {
                     errorInfo.getErrorCode() == WechatReturnCode.AccessTokenOvertime.getCode();
         } else {
             return false;
+        }
+    }
+
+    static boolean errorInfo2Boolean(String result) {
+        ErrorInfo errorInfo = WechatResponse.result2Bean(result, ErrorInfo.class);
+        if (errorInfo.getErrorCode() == 0) {
+            errorInfo = null;
+            return true;
+        } else {
+            throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
         }
     }
 }

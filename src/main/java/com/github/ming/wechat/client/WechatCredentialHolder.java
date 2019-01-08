@@ -44,7 +44,7 @@ public class WechatCredentialHolder {
     public WechatCredentialHolder(String appId, String appSecret, int accessTokenTimeoutRetry) {
         this.appId = appId;
         this.appSecret = appSecret;
-        this.accessTokenTimeoutRetry = accessTokenTimeoutRetry;
+        this.accessTokenTimeoutRetry = accessTokenTimeoutRetry + 1;
         lock = new ReentrantLock();
     }
 
@@ -54,7 +54,7 @@ public class WechatCredentialHolder {
      * @param refreshToken 是否重新获取accessToken true=是；false=否
      * @return
      */
-    public String getAccessToken(boolean refreshToken) {
+    String getAccessToken(boolean refreshToken) {
         if (this.accessToken == null || refreshToken || System.currentTimeMillis() / 1000 -
                 this.accessToken.getCreateTime() >= this.accessToken.getExpiresIn()) {
             this.resetAccessToken();

@@ -4,7 +4,6 @@ import com.github.ming.wechat.client.apiurl.WechatApiUrls;
 import com.github.ming.wechat.client.bean.menu.WechatMenuButton;
 import com.github.ming.wechat.client.bean.menu.WechatMenuButtonGroup;
 import com.github.ming.wechat.client.bean.menu.response.WechatMenusResult;
-import com.github.ming.wechat.client.bean.result.ErrorInfo;
 import com.github.ming.wechat.client.exception.WechatException;
 import com.github.ming.wechat.util.StringUtil;
 
@@ -42,7 +41,7 @@ public class WechatMenuClient {
         Map<String, Object> params = new HashMap<>(3);
         params.put("button", menuButtonList);
         String result = WechatRequest.post(WechatApiUrls.CREATE_MENU_URL, params, credentialHolder);
-        return errorInfo2Boolean(result);
+        return WechatResponse.errorInfo2Boolean(result);
     }
 
     /**
@@ -63,7 +62,7 @@ public class WechatMenuClient {
      */
     public boolean deleteMenus() throws WechatException {
         String result = WechatRequest.get(WechatApiUrls.DELETE_MENU_URL, credentialHolder);
-        return errorInfo2Boolean(result);
+        return WechatResponse.errorInfo2Boolean(result);
     }
 
     /*---- 个性化菜单 ----*/
@@ -79,7 +78,7 @@ public class WechatMenuClient {
             throw new WechatException("创建菜单的内容为空");
         }
         String result = WechatRequest.post(WechatApiUrls.CREATE_CONDITIONAL_MENU_URL, wechatMenuButtonGroup, credentialHolder);
-        return errorInfo2Boolean(result);
+        return WechatResponse.errorInfo2Boolean(result);
     }
 
     /**
@@ -91,7 +90,7 @@ public class WechatMenuClient {
         Map<String, Object> params = new HashMap<>(3);
         params.put("menuid", menuId);
         String result = WechatRequest.post(WechatApiUrls.DELETE_CONDITIONAL_MENU_URL, params, credentialHolder);
-        return errorInfo2Boolean(result);
+        return WechatResponse.errorInfo2Boolean(result);
     }
 
     /**
@@ -109,16 +108,6 @@ public class WechatMenuClient {
         String result = WechatRequest.post(WechatApiUrls.TRY_MATCH_MENU_URL, params, credentialHolder);
         params = null;
         return WechatResponse.result2Bean(result, WechatMenuButtonGroup.class);
-    }
-
-    private boolean errorInfo2Boolean(String result) {
-        ErrorInfo errorInfo = WechatResponse.result2Bean(result, ErrorInfo.class);
-        if (errorInfo.getErrorCode() == 0) {
-            errorInfo = null;
-            return true;
-        } else {
-            throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
-        }
     }
 
 }
