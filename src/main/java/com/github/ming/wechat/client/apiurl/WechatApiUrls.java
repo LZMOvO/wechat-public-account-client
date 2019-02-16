@@ -35,6 +35,36 @@ public class WechatApiUrls {
     public static final String MEDIA_UPLOAD_URL = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
 
     /**
+     * 获取临时素材 get
+     */
+    public static final String GET_MEDIA_URL = "https://api.weixin.qq.com/cgi-bin/media/get?access_token=ACCESS_TOKEN&media_id=MEDIA_ID";
+
+    /**
+     * 新增永久素材 post
+     */
+    public static final String PERMANENT_MEDIA_UPLOAD_URL = "https://api.weixin.qq.com/cgi-bin/material/add_news?access_token=ACCESS_TOKEN";
+
+    /**
+     * 上传图文消息内的图片获取URL
+     */
+    public static final String MEDIA_UPLOADIMG_UPLOAD_URL = "https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=ACCESS_TOKEN";
+
+    /**
+     * 新增其他类型永久素材
+     */
+    public static final String MATERIAL_UPLOAD_URL = "https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=ACCESS_TOKEN&type=TYPE";
+
+    /**
+     * 获取永久素材
+     */
+    public static final String GET_MATERIAL_URL = "https://api.weixin.qq.com/cgi-bin/material/get_material?access_token=ACCESS_TOKEN";
+
+    /**
+     * 生成带参数的二维码
+     */
+    public static final String CREATE_QRCODE_URL = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=TOKEN";
+
+    /**
      * 创建个性化菜单 post
      */
     public static final String CREATE_CONDITIONAL_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/addconditional?access_token=ACCESS_TOKEN";

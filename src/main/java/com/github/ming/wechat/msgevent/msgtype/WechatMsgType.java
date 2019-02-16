@@ -60,7 +60,7 @@ public enum WechatMsgType {
         return type;
     }
 
-    public static boolean findMsgTpye(String type) {
+    public static boolean findMsgType(String type) {
         for (WechatMsgType wechatMsgType : values()) {
             if (wechatMsgType.getType().equals(type)) {
                 return true;

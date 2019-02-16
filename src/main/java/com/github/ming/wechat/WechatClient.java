@@ -1,13 +1,14 @@
 package com.github.ming.wechat;
 
-import com.github.ming.wechat.client.WechatCredentialHolder;
-import com.github.ming.wechat.client.WechatMediaClient;
-import com.github.ming.wechat.client.WechatMenuClient;
-import com.github.ming.wechat.client.WechatUserClient;
+import com.github.ming.wechat.client.*;
+import com.github.ming.wechat.client.bean.media.WechatMaterialVideoDesc;
+import com.github.ming.wechat.client.bean.media.WechatMediaImageText;
 import com.github.ming.wechat.client.bean.media.WechatMediaInfo;
 import com.github.ming.wechat.client.bean.menu.WechatMenuButton;
 import com.github.ming.wechat.client.bean.menu.WechatMenuButtonGroup;
 import com.github.ming.wechat.client.bean.menu.response.WechatMenusResult;
+import com.github.ming.wechat.client.bean.qrcode.request.WechatQrCode;
+import com.github.ming.wechat.client.bean.qrcode.response.WechatQrCodeResult;
 import com.github.ming.wechat.client.bean.user.WechatUser;
 import com.github.ming.wechat.client.bean.user.WechatUserOpenIdList;
 import com.github.ming.wechat.client.bean.user.WechatUserTag;
@@ -33,6 +34,8 @@ public class WechatClient {
 
     private final WechatMediaClient mediaClient;
 
+    private final WechatAcountManageClient acountManageClient;
+
     private WechatMsgEventHandler msgEventHandler;
 
     public WechatClient(String appId, String appSecret, int timeoutRetry) {
@@ -40,6 +43,7 @@ public class WechatClient {
         menuClient = new WechatMenuClient(credentialHolder);
         userClient = new WechatUserClient(credentialHolder);
         mediaClient = new WechatMediaClient(credentialHolder);
+        acountManageClient = new WechatAcountManageClient(credentialHolder);
     }
 
     public WechatClient(String appId, String appSecret, int timeoutRetry, boolean openEncryption, String eventToken, String encodingAESKey) {
@@ -48,6 +52,7 @@ public class WechatClient {
         menuClient = new WechatMenuClient(credentialHolder);
         userClient = new WechatUserClient(credentialHolder);
         mediaClient = new WechatMediaClient(credentialHolder);
+        acountManageClient = new WechatAcountManageClient(credentialHolder);
     }
 
     /*---- 菜单管理 ----*/
@@ -282,15 +287,71 @@ public class WechatClient {
      *
      * @param file 图片（image）: 2M，支持PNG\JPEG\JPG\GIF格式；
      *             语音（voice）：2M，播放长度不超过60s，支持AMR\MP3格式；
-     *             视频（video）：10MB，支持MP4格式；缩略图（thumb）：64KB，支持JPG格式
+     *             视频（video）：10MB，支持MP4格式；缩略图（thumb）：64KB，支持JPG格式；
+     *             缩略图（thumb）：64KB，支持JPG格式；
      * @param type 媒体文件类型，分别有图片（image）、语音（voice）、视频（video）和缩略图（thumb）
      * @return 上传结果
      */
-    public WechatMediaInfo mediaUpload(File file, String type) throws WechatException {
-        return mediaClient.mediaUpload(file, type);
+    public WechatMediaInfo uploadMedia(File file, String type) throws WechatException {
+        return mediaClient.uploadMedia(file, type);
     }
 
+    /**
+     * 新增永久图文素材
+     *
+     * @param imageTextList 图文list
+     * @return 素材id
+     */
+    public String uploadPermanentMedia(List<WechatMediaImageText> imageTextList) throws WechatException {
+        return mediaClient.uploadPermanentMedia(imageTextList);
+    }
 
+    /**
+     * 上传图文消息内的图片获取URL
+     * 本接口所上传的图片不占用公众号的素材库中图片数量的5000个的限制。图片仅支持jpg/png格式，大小必须在1MB以下
+     *
+     * @param file 图片file
+     * @return 图片url
+     */
+    public String uploadMediaImg(File file) throws WechatException {
+        return mediaClient.uploadMediaImg(file);
+    }
+
+    /**
+     * 新增永久素材，不可以上传视频类型
+     *
+     * @param file 图片（image）: 2M，支持PNG\JPEG\JPG\GIF格式；
+     *             语音（voice）：2M，播放长度不超过60s，支持AMR\MP3格式；
+     *             缩略图（thumb）：64KB，支持JPG格式；
+     * @param type 媒体文件类型，分别有图片（image）、语音（voice）、视频（video）和缩略图（thumb）
+     * @return 上传结果
+     */
+    public WechatMediaInfo uploadMaterial(File file, String type) throws WechatException {
+        return mediaClient.uploadMaterial(file, type);
+    }
+
+    /**
+     * 新增永久视频类型素材，不可以上传其他类型
+     *
+     * @param file 视频（video）：10MB，支持MP4格式；缩略图（thumb）：64KB，支持JPG格式；
+     * @param desc type=video时，desc必传；type为其他类型时，传空即可
+     * @return 上传结果
+     */
+    public WechatMediaInfo uploadMaterialVideo(File file, WechatMaterialVideoDesc desc) throws WechatException {
+        return mediaClient.uploadMaterialVideo(file, desc);
+    }
+
+    /*---- 账号管理 ----*/
+
+    /**
+     * 生成带参数的二维码
+     *
+     * @param wechatQrCode 参数
+     * @return 请求结果
+     */
+    public WechatQrCodeResult createQrCode(WechatQrCode wechatQrCode) {
+        return acountManageClient.createQrCode(wechatQrCode);
+    }
 
     /*---- 接收消息、事件 ----*/
 

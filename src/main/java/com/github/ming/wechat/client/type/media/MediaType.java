@@ -39,7 +39,7 @@ public enum MediaType {
         return type;
     }
 
-    public static boolean findMsgTpye(String type) {
+    public static boolean findType(String type) {
         for (MediaType mediaType : values()) {
             if (mediaType.getType().equals(type)) {
                 return true;

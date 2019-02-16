@@ -48,7 +48,7 @@ public enum WechatReplyType {
         return type;
     }
 
-    public static boolean findMsgTpye(String type) {
+    public static boolean findReplyType(String type) {
         for (WechatReplyType wechatMsgType : values()) {
             if (wechatMsgType.getType().equals(type)) {
                 return true;

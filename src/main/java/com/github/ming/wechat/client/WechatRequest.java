@@ -1,6 +1,7 @@
 package com.github.ming.wechat.client;
 
 import com.alibaba.fastjson.JSON;
+import com.github.ming.wechat.client.bean.media.WechatMaterialVideoDesc;
 import com.github.ming.wechat.util.HttpUtil;
 
 import java.io.File;
@@ -59,6 +60,26 @@ class WechatRequest {
                 result = HttpUtil.uploadForWechat(url.replace("ACCESS_TOKEN", credentialHolder.getAccessToken(false)), file);
             } else {
                 result = HttpUtil.uploadForWechat(replaceAccessToken(url, credentialHolder.getAccessToken(true)), file);
+            }
+            if (!WechatResponse.judgeAccessTokenTimeout(result)) {
+                break;
+            } else {
+                ++times;
+            }
+        } while (times < credentialHolder.getAccessTokenTimeoutRetry());
+        return result;
+    }
+
+    static String uploadMaterialVideo(String url, File file, WechatMaterialVideoDesc desc, WechatCredentialHolder credentialHolder) {
+        String result;
+        int times = 0;
+        do {
+            if (times == 0) {
+                result = HttpUtil.uploadForWechatMaterialVideo(url.replace("ACCESS_TOKEN",
+                        credentialHolder.getAccessToken(false)), file, JSON.toJSONString(desc));
+            } else {
+                result = HttpUtil.uploadForWechatMaterialVideo(url.replace("ACCESS_TOKEN",
+                        credentialHolder.getAccessToken(true)), file, JSON.toJSONString(desc));
             }
             if (!WechatResponse.judgeAccessTokenTimeout(result)) {
                 break;

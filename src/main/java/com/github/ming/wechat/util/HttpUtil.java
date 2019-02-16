@@ -286,6 +286,32 @@ public class HttpUtil {
     }
 
     /**
+     * 微信永久素材中视频上传
+     *
+     * @param url        请求url
+     * @param file       待上传文件
+     * @param jsomParams json串
+     * @return
+     */
+    public static String uploadForWechatMaterialVideo(String url, File file, String jsomParams) {
+        if (file == null || file.length() == 0) {
+            return null;
+        }
+        HttpPost httpPost = new HttpPost(url);
+        httpPost.setHeader("Connection", "Keep-Alive");
+        httpPost.setHeader("Cache-Control", "no-cache");
+        httpPost.setHeader("Content-Type", "multipart/form-data;charset=UTF-8");
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        builder.addBinaryBody("media", file, ContentType.DEFAULT_BINARY, file.getName());
+        builder.addTextBody("description", jsomParams);
+        builder.setCharset(Charset.forName("UTF-8"));
+        HttpEntity entity = builder.build();
+        httpPost.setEntity(entity);
+        return httpResult(httpPost);
+    }
+
+    /**
      * 请求结果处理
      *
      * @param request request
