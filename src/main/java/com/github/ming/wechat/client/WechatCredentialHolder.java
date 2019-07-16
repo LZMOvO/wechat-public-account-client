@@ -49,7 +49,7 @@ public class WechatCredentialHolder {
     }
 
     /**
-     * 项目内获取当前可用的accessdToken
+     * 项目内获取当前可用的accessToken
      *
      * @param refreshToken 是否重新获取accessToken true=是；false=否
      * @return

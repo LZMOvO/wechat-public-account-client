@@ -34,7 +34,7 @@ public class WechatClient {
 
     private final WechatMediaClient mediaClient;
 
-    private final WechatAcountManageClient acountManageClient;
+    private final WechatAccountManageClient accountManageClient;
 
     private WechatMsgEventHandler msgEventHandler;
 
@@ -43,7 +43,7 @@ public class WechatClient {
         menuClient = new WechatMenuClient(credentialHolder);
         userClient = new WechatUserClient(credentialHolder);
         mediaClient = new WechatMediaClient(credentialHolder);
-        acountManageClient = new WechatAcountManageClient(credentialHolder);
+        accountManageClient = new WechatAccountManageClient(credentialHolder);
     }
 
     public WechatClient(String appId, String appSecret, int timeoutRetry, boolean openEncryption, String eventToken, String encodingAESKey) {
@@ -52,7 +52,7 @@ public class WechatClient {
         menuClient = new WechatMenuClient(credentialHolder);
         userClient = new WechatUserClient(credentialHolder);
         mediaClient = new WechatMediaClient(credentialHolder);
-        acountManageClient = new WechatAcountManageClient(credentialHolder);
+        accountManageClient = new WechatAccountManageClient(credentialHolder);
     }
 
     /*---- 菜单管理 ----*/
@@ -350,7 +350,7 @@ public class WechatClient {
      * @return 请求结果
      */
     public WechatQrCodeResult createQrCode(WechatQrCode wechatQrCode) {
-        return acountManageClient.createQrCode(wechatQrCode);
+        return accountManageClient.createQrCode(wechatQrCode);
     }
 
     /*---- 接收消息、事件 ----*/
@@ -400,5 +400,4 @@ public class WechatClient {
     public String wechatReply2Xml(WechatReply reply) {
         return msgEventHandler.wechatReply2Xml(reply);
     }
-
 }

@@ -3,7 +3,7 @@ package com.github.ming.wechat.client;
 import com.alibaba.fastjson.JSON;
 import com.github.ming.wechat.client.bean.result.ErrorInfo;
 import com.github.ming.wechat.client.exception.WechatException;
-import com.github.ming.wechat.client.returncode.WechatReturnCode;
+import com.github.ming.wechat.client.returncode.WechatErrorCode;
 import com.github.ming.wechat.util.StringUtil;
 
 /**
@@ -33,7 +33,7 @@ class WechatResponse {
         }
         if (wechatResult.contains(RESULT_FAULT_FLAG)) {
             ErrorInfo errorInfo = JSON.parseObject(wechatResult, ErrorInfo.class);
-            if (errorInfo.getErrorCode() != WechatReturnCode.OK.getCode()) {
+            if (errorInfo.getErrorCode() != WechatErrorCode.OK.getCode()) {
                 throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
             }
         }
@@ -49,9 +49,9 @@ class WechatResponse {
     static boolean judgeAccessTokenTimeout(String result) {
         if (!StringUtil.isBlank(result) && result.contains(RESULT_FAULT_FLAG)) {
             ErrorInfo errorInfo = JSON.parseObject(result, ErrorInfo.class);
-            return errorInfo.getErrorCode() == WechatReturnCode.IllegalAccessToken.getCode() ||
-                    errorInfo.getErrorCode() == WechatReturnCode.ObtainAccessTokenError.getCode() ||
-                    errorInfo.getErrorCode() == WechatReturnCode.AccessTokenOvertime.getCode();
+            return errorInfo.getErrorCode() == WechatErrorCode.IllegalAccessToken.getCode() ||
+                    errorInfo.getErrorCode() == WechatErrorCode.ObtainAccessTokenError.getCode() ||
+                    errorInfo.getErrorCode() == WechatErrorCode.AccessTokenOvertime.getCode();
         } else {
             return false;
         }
@@ -60,7 +60,6 @@ class WechatResponse {
     static boolean errorInfo2Boolean(String result) {
         ErrorInfo errorInfo = WechatResponse.result2Bean(result, ErrorInfo.class);
         if (errorInfo.getErrorCode() == 0) {
-            errorInfo = null;
             return true;
         } else {
             throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());

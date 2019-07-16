@@ -12,6 +12,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -25,10 +26,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
+import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -38,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 /**
  * httpClient请求工具
@@ -46,17 +51,26 @@ import java.util.Map.Entry;
  */
 public class HttpUtil {
 
+    private static final Logger logger = LoggerFactory.getLogger(HttpUtil.class);
+
+    private static PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = null;
+
     private static CloseableHttpClient httpClient = null;
 
-    /**
-     * 超时时间
-     */
-    private static final int TIME_OUT = 20 * 1000;
+    private static RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(2 * 1000)
+            .setSocketTimeout(2 * 1000).setConnectionRequestTimeout(500).build();
+
+    static {
+        initHttpClient();
+        IdleConnectionMonitorThread idleThread = new IdleConnectionMonitorThread(poolingHttpClientConnectionManager);
+        idleThread.setDaemon(true);
+        idleThread.start();
+    }
 
     /**
      * 请求重试次数
      */
-    private static final int EXECUTION_NUM = 3;
+    private static final int EXECUTION_NUM = 0;
 
     /**
      * 最大连接数
@@ -86,18 +100,18 @@ public class HttpUtil {
      * 携带参数get请求
      *
      * @param url    请求url
-     * @param params
+     * @param params 多个参数，key=参数名，value=参数值
      * @return
      */
     public static String get(String url, Map<String, Object> params) {
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setPath(url);
-        uriBuilder.setParameters(map2NameValuePairs(params));
+        uriBuilder.setParameters(params2NVPs(params));
         try {
             HttpGet httpGet = new HttpGet(uriBuilder.build());
-            System.out.println(httpGet.getURI());
             return httpResult(httpGet);
         } catch (URISyntaxException e) {
+            logger.error("携带参数get请求  请求出错：" + e.getMessage(), e);
             e.printStackTrace();
             return null;
         }
@@ -114,7 +128,7 @@ public class HttpUtil {
     public static String get(String url, Map<String, Object> headers, Map<String, Object> params) {
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setPath(url);
-        uriBuilder.setParameters(map2NameValuePairs(params));
+        uriBuilder.setParameters(params2NVPs(params));
         try {
             HttpGet httpGet = new HttpGet(uriBuilder.build());
             if (headers != null && headers.size() > 0) {
@@ -124,6 +138,7 @@ public class HttpUtil {
             }
             return httpResult(httpGet);
         } catch (URISyntaxException e) {
+            logger.error("携带头信息，参数的get请求   请求出错：" + e.getMessage(), e);
             e.printStackTrace();
             return null;
         }
@@ -150,9 +165,10 @@ public class HttpUtil {
     public static String post(String url, Map<String, Object> params) {
         try {
             HttpPost httpPost = new HttpPost(url);
-            httpPost.setEntity(new UrlEncodedFormEntity(map2NameValuePairs(params), "UTF-8"));
+            httpPost.setEntity(new UrlEncodedFormEntity(params2NVPs(params), "UTF-8"));
             return httpResult(httpPost);
         } catch (UnsupportedEncodingException e) {
+            logger.error("携带参数的post请求   请求出错：" + e.getMessage(), e);
             e.printStackTrace();
             return null;
         }
@@ -169,14 +185,11 @@ public class HttpUtil {
     public static String post(String url, Map<String, Object> headers, Map<String, Object> params) {
         try {
             HttpPost httpPost = new HttpPost(url);
-            if (headers != null && headers.size() > 0) {
-                for (Entry<String, Object> entry : headers.entrySet()) {
-                    httpPost.setHeader(entry.getKey(), String.valueOf(entry.getValue()));
-                }
-            }
-            httpPost.setEntity(new UrlEncodedFormEntity(map2NameValuePairs(params), "UTF-8"));
+            requestHeader(headers, httpPost);
+            httpPost.setEntity(new UrlEncodedFormEntity(params2NVPs(params), "UTF-8"));
             return httpResult(httpPost);
         } catch (UnsupportedEncodingException e) {
+            logger.error("携带头信息，参数的post请求   请求出错：" + e.getMessage(), e);
             e.printStackTrace();
             return null;
         }
@@ -233,6 +246,29 @@ public class HttpUtil {
     /**
      * 上传
      *
+     * @param url   请求url
+     * @param files 上传文件的list
+     * @return
+     */
+    public static String upload(String url, List<File> files) {
+        if (files == null || files.size() == 0) {
+            return null;
+        }
+        HttpPost httpPost = new HttpPost(url);
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        for (int i = 0; i < files.size(); i++) {
+            builder.addBinaryBody("file_" + i, files.get(i), ContentType.DEFAULT_BINARY, files.get(i).getName());
+            builder.setCharset(Charset.forName("UTF-8"));
+        }
+        HttpEntity entity = builder.build();
+        httpPost.setEntity(entity);
+        return httpResult(httpPost);
+    }
+
+    /**
+     * 上传
+     *
      * @param url     请求url，必须
      * @param headers 请求头，非必须，不设置传null
      * @param params  参数，非必须，不设置传null
@@ -241,15 +277,11 @@ public class HttpUtil {
      */
     public static String upload(String url, Map<String, Object> headers, Map<String, Object> params, File file) {
         HttpPost httpPost = new HttpPost(url);
-        if (headers != null && headers.size() > 0) {
-            for (Entry<String, Object> entry : headers.entrySet()) {
-                httpPost.setHeader(entry.getKey(), String.valueOf(entry.getValue()));
-            }
-        }
+        requestHeader(headers, httpPost);
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         builder.addBinaryBody("file", file, ContentType.DEFAULT_BINARY, file.getName());
         builder.setCharset(Charset.forName("UTF-8"));
+        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         if (params != null && params.size() > 0) {
             for (Entry<String, Object> entry : params.entrySet()) {
                 builder.addTextBody(entry.getKey(), String.valueOf(entry.getValue()), ContentType.DEFAULT_BINARY);
@@ -272,17 +304,7 @@ public class HttpUtil {
         if (file == null || file.length() == 0) {
             return null;
         }
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.setHeader("Connection", "Keep-Alive");
-        httpPost.setHeader("Cache-Control", "no-cache");
-        httpPost.setHeader("Content-Type", "multipart/form-data;charset=UTF-8");
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-        builder.addBinaryBody("media", file, ContentType.DEFAULT_BINARY, file.getName());
-        builder.setCharset(Charset.forName("UTF-8"));
-        HttpEntity entity = builder.build();
-        httpPost.setEntity(entity);
-        return httpResult(httpPost);
+        return httpResult(wechatUploadPost(url, file, null));
     }
 
     /**
@@ -290,13 +312,24 @@ public class HttpUtil {
      *
      * @param url        请求url
      * @param file       待上传文件
-     * @param jsomParams json串
+     * @param jsonParams json串
      * @return
      */
-    public static String uploadForWechatMaterialVideo(String url, File file, String jsomParams) {
+    public static String uploadForWechatMaterialVideo(String url, File file, String jsonParams) {
         if (file == null || file.length() == 0) {
             return null;
         }
+        return httpResult(wechatUploadPost(url, file, jsonParams));
+    }
+
+    /**
+     * 构建微信post请求
+     *
+     * @param url  请求url
+     * @param file 上传的文件
+     * @return HttpPost
+     */
+    private static HttpPost wechatUploadPost(String url, File file, String jsonParams) {
         HttpPost httpPost = new HttpPost(url);
         httpPost.setHeader("Connection", "Keep-Alive");
         httpPost.setHeader("Cache-Control", "no-cache");
@@ -304,11 +337,13 @@ public class HttpUtil {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         builder.addBinaryBody("media", file, ContentType.DEFAULT_BINARY, file.getName());
-        builder.addTextBody("description", jsomParams);
+        if (jsonParams != null && !"".equals(jsonParams)) {
+            builder.addTextBody("description", jsonParams);
+        }
         builder.setCharset(Charset.forName("UTF-8"));
         HttpEntity entity = builder.build();
         httpPost.setEntity(entity);
-        return httpResult(httpPost);
+        return httpPost;
     }
 
     /**
@@ -318,18 +353,25 @@ public class HttpUtil {
      * @return
      */
     private static String httpResult(HttpRequestBase request) {
-        CloseableHttpClient httpClient = getHttpClient();
+        CloseableHttpClient httpClient = initHttpClient();
+        CloseableHttpResponse response = null;
+        configHttpRequest(request);
         try {
-            configHttpRequest(request);
-            CloseableHttpResponse response = httpClient.execute(request);
+            response = httpClient.execute(request);
             HttpEntity entity = response.getEntity();
             if (entity != null) {
-                String result = EntityUtils.toString(entity);
-                response.close();
-                return result;
+                return EntityUtils.toString(entity);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
         }
         return null;
     }
@@ -339,12 +381,31 @@ public class HttpUtil {
      *
      * @return
      */
-    public static CloseableHttpClient getHttpClient() {
+    private static CloseableHttpClient initHttpClient() {
         if (httpClient != null) {
             return httpClient;
         }
+        poolingHttpClientConnectionManager = createPoolingHttpClientConnectionManager();
         httpClient = createHttpClient();
         return httpClient;
+    }
+
+    /**
+     * 创建PoolingHttpClientConnectionManager
+     */
+    private static PoolingHttpClientConnectionManager createPoolingHttpClientConnectionManager() {
+        ConnectionSocketFactory csFactory = PlainConnectionSocketFactory.getSocketFactory();
+        LayeredConnectionSocketFactory lcsFactory = SSLConnectionSocketFactory.getSocketFactory();
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", csFactory).register("https", lcsFactory).build();
+        PoolingHttpClientConnectionManager phccManager = new PoolingHttpClientConnectionManager(registry);
+        SocketConfig socketConfig = SocketConfig.custom().setTcpNoDelay(true).setSoReuseAddress(true).setSoTimeout(500)
+                .setSoLinger(60).setSoKeepAlive(true).build();
+        phccManager.setDefaultSocketConfig(socketConfig);
+        phccManager.setSocketConfig(new HttpHost("somehost", 80), socketConfig);
+        phccManager.setMaxTotal(MAX_TOTAL);
+        phccManager.setDefaultMaxPerRoute(DEFAULT_MAX_PRR_ROUTE);
+        return phccManager;
     }
 
     /**
@@ -352,14 +413,7 @@ public class HttpUtil {
      *
      * @return
      */
-    public static CloseableHttpClient createHttpClient() {
-        ConnectionSocketFactory csFactory = PlainConnectionSocketFactory.getSocketFactory();
-        LayeredConnectionSocketFactory lcsFactory = SSLConnectionSocketFactory.getSocketFactory();
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create().register("http", csFactory)
-                .register("https", lcsFactory).build();
-        PoolingHttpClientConnectionManager phccManager = new PoolingHttpClientConnectionManager(registry);
-        phccManager.setMaxTotal(MAX_TOTAL);
-        phccManager.setDefaultMaxPerRoute(DEFAULT_MAX_PRR_ROUTE);
+    private static CloseableHttpClient createHttpClient() {
         HttpRequestRetryHandler httpRequestRetryHandler = (exception, executionCount, context) -> {
             if (executionCount >= EXECUTION_NUM) {
                 return false;
@@ -389,17 +443,14 @@ public class HttpUtil {
             // 请求幂等，再次尝试
             return !(request instanceof HttpEntityEnclosingRequest);
         };
-        return HttpClients.custom().setConnectionManager(phccManager).setRetryHandler(httpRequestRetryHandler).build();
+        return HttpClients.custom().setConnectionManager(poolingHttpClientConnectionManager)
+                .setRetryHandler(httpRequestRetryHandler).setDefaultRequestConfig(requestConfig).build();
     }
 
     /**
      * 配置请求超时时间
-     *
-     * @param httpRequestBase
      */
     private static void configHttpRequest(HttpRequestBase httpRequestBase) {
-        RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(TIME_OUT)
-                .setConnectTimeout(TIME_OUT).setSocketTimeout(TIME_OUT).build();
         httpRequestBase.setConfig(requestConfig);
     }
 
@@ -409,8 +460,8 @@ public class HttpUtil {
      * @param params 待转换的参数
      * @return
      */
-    private static List<NameValuePair> map2NameValuePairs(Map<String, Object> params) {
-        List<NameValuePair> nvpList = new ArrayList<NameValuePair>();
+    private static List<NameValuePair> params2NVPs(Map<String, Object> params) {
+        List<NameValuePair> nvpList = new ArrayList<>();
         if (params != null && params.size() > 0) {
             for (Entry<String, Object> param : params.entrySet()) {
                 nvpList.add(new BasicNameValuePair(param.getKey(), String.valueOf(param.getValue())));
@@ -419,4 +470,44 @@ public class HttpUtil {
         return nvpList;
     }
 
+    /**
+     * 设置请求头
+     *
+     * @param headers     头参数
+     * @param requestBase 请求
+     */
+    private static void requestHeader(Map<String, Object> headers, HttpRequestBase requestBase) {
+        if (headers != null && headers.size() > 0) {
+            for (Entry<String, Object> entry : headers.entrySet()) {
+                requestBase.setHeader(entry.getKey(), String.valueOf(entry.getValue()));
+            }
+        }
+    }
+
+    public static class IdleConnectionMonitorThread extends Thread {
+
+        private final PoolingHttpClientConnectionManager connMgr;
+
+        private volatile boolean shutdown = false;
+
+        IdleConnectionMonitorThread(PoolingHttpClientConnectionManager connMgr) {
+            super();
+            this.connMgr = connMgr;
+        }
+
+        @Override
+        public void run() {
+            try {
+                while (!shutdown) {
+                    synchronized (this) {
+                        wait(5000);
+                        connMgr.closeExpiredConnections();
+                        connMgr.closeIdleConnections(30, TimeUnit.SECONDS);
+                    }
+                }
+            } catch (InterruptedException ex) {
+                // terminate
+            }
+        }
+    }
 }

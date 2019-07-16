@@ -11,11 +11,11 @@ import com.github.ming.wechat.client.exception.WechatException;
  * @author : Liu Zeming
  * @date : 2019-02-16 12:19
  */
-public class WechatAcountManageClient {
+public class WechatAccountManageClient {
 
     private WechatCredentialHolder credentialHolder;
 
-    public WechatAcountManageClient(WechatCredentialHolder credentialHolder) {
+    public WechatAccountManageClient(WechatCredentialHolder credentialHolder) {
         this.credentialHolder = credentialHolder;
     }
 
@@ -32,5 +32,4 @@ public class WechatAcountManageClient {
         String result = WechatRequest.post(WechatApiUrls.CREATE_QRCODE_URL, wechatQrCode, credentialHolder);
         return WechatResponse.result2Bean(result, WechatQrCodeResult.class);
     }
-
 }

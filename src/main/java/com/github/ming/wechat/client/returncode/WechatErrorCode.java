@@ -1,13 +1,16 @@
 package com.github.ming.wechat.client.returncode;
 
 /**
- * 微信返回码
+ * 微信错误码
  *
  * @author : Liu Zeming
  * @date : 2018-12-14 02:05
  */
-public enum WechatReturnCode {
+public enum WechatErrorCode {
 
+    /**
+     * 微信错误码以及对应错误码的含义
+     */
     BusySystem(-1, "系统繁忙，此时请开发者稍候再试"),
     OK(0, "请求成功"),
     ObtainAccessTokenError(40001, "获取 access_token 时 AppSecret 错误，或者 access_token 无效。请开发者认真比对 AppSecret 的正确性，或查看是否正在为恰当的公众号调用接口"),
@@ -179,7 +182,7 @@ public enum WechatReturnCode {
 
     private String msg;
 
-    private WechatReturnCode(int code, String msg) {
+    private WechatErrorCode(int code, String msg) {
         this.code = code;
         this.msg = msg;
     }

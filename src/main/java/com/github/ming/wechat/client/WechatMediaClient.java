@@ -94,7 +94,6 @@ public class WechatMediaClient {
         JSONObject params = new JSONObject(3);
         params.put("articles", imageTextList);
         String result = WechatRequest.post(WechatApiUrls.PERMANENT_MEDIA_UPLOAD_URL, params.toJSONString(), credentialHolder);
-        params = null;
         return WechatResponse.result2Bean(result, WechatMediaInfo.class).getMediaId();
     }
 
@@ -135,11 +134,11 @@ public class WechatMediaClient {
         if (MediaType.VIDEO.getType().equals(type)) {
             throw new WechatException("请使用 uploadMaterialVideo 接口上传视频");
         }
-        if (MediaType.IMAGE.getType().equals(type) && file.length() > TWO_M_BYTE) {
-            throw new WechatException("图片大小超过2M");
-        }
         if (MediaType.VOICE.getType().equals(type) && file.length() > TWO_M_BYTE) {
             throw new WechatException("语音大小超过2M");
+        }
+        if (MediaType.IMAGE.getType().equals(type) && file.length() > TWO_M_BYTE) {
+            throw new WechatException("图片大小超过2M");
         }
         if (MediaType.THUMB.getType().equals(type) && file.length() > SIXTY_FOUR_KB) {
             throw new WechatException("缩略图大小超过64KB");
@@ -169,7 +168,4 @@ public class WechatMediaClient {
                 MediaType.VIDEO.getType()), file, desc, credentialHolder);
         return WechatResponse.result2Bean(result, WechatMediaInfo.class);
     }
-
-
-
 }

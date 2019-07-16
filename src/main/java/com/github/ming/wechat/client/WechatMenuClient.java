@@ -106,7 +106,6 @@ public class WechatMenuClient {
         Map<String, Object> params = new HashMap<>(3);
         params.put("user_id", userId);
         String result = WechatRequest.post(WechatApiUrls.TRY_MATCH_MENU_URL, params, credentialHolder);
-        params = null;
         return WechatResponse.result2Bean(result, WechatMenuButtonGroup.class);
     }
 

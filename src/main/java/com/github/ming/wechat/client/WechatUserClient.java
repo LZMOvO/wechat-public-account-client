@@ -8,6 +8,7 @@ import com.github.ming.wechat.client.bean.user.WechatUserTag;
 import com.github.ming.wechat.client.bean.user.request.*;
 import com.github.ming.wechat.client.bean.user.response.*;
 import com.github.ming.wechat.client.exception.WechatException;
+import com.github.ming.wechat.client.returncode.WechatErrorCode;
 import com.github.ming.wechat.util.StringUtil;
 import com.github.ming.wechat.util.WechatUtil;
 
@@ -158,7 +159,6 @@ public final class WechatUserClient {
         params.put("openid", openId);
         String result = WechatRequest.post(WechatApiUrls.GET_USER_TAGS_FOR_USER_URL, params, credentialHolder);
         WechatUserTagsForUserResult wechatUserTagsForUserResult = WechatResponse.result2Bean(result, WechatUserTagsForUserResult.class);
-        params = null;
         return wechatUserTagsForUserResult != null ? wechatUserTagsForUserResult.getTagIdList() : null;
     }
 
@@ -180,12 +180,7 @@ public final class WechatUserClient {
             throw new WechatException("用户备注名有误");
         }
         String result = WechatRequest.post(WechatApiUrls.UPDATE_USER_REMARK_NAME_URL, new UpdateWechatUserRemarkName(openId, remarkName), credentialHolder);
-        ErrorInfo errorInfo = WechatResponse.result2Bean(result, ErrorInfo.class);
-        if (errorInfo.getErrorCode() == 0) {
-            return true;
-        } else {
-            throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
-        }
+        return errorInfo2Boolean(result);
     }
 
     /*---- 获取用户基本信息 ----*/
@@ -275,15 +270,15 @@ public final class WechatUserClient {
         params.put("openid_list", openIdList);
         String result = WechatRequest.post(operate ? WechatApiUrls.BATCH_BLACK_USER_URL : WechatApiUrls.BATCH_UNBLACK_USER_URL,
                 params, credentialHolder);
+        return errorInfo2Boolean(result);
+    }
+
+    private boolean errorInfo2Boolean(String result) {
         ErrorInfo errorInfo = WechatResponse.result2Bean(result, ErrorInfo.class);
-        if (errorInfo.getErrorCode() == 0) {
-            errorInfo = null;
-            params = null;
+        if (errorInfo.getErrorCode() == WechatErrorCode.OK.getCode()) {
             return true;
         } else {
-            params = null;
             throw new WechatException(errorInfo.getErrorCode(), errorInfo.getErrMsg());
         }
     }
-
 }

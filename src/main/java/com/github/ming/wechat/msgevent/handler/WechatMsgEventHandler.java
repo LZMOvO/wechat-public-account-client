@@ -37,13 +37,13 @@ public class WechatMsgEventHandler {
      * @param openEncryption 是否开启消息加密（true=开启；false=未开启）
      * @param appId          第三方用户唯一凭证
      * @param eventToken     服务器配置中的token
-     * @param encodingAESKey 消息加解密密钥
+     * @param encodingAesKey 消息加解密密钥
      */
-    public WechatMsgEventHandler(boolean openEncryption, String appId, String eventToken, String encodingAESKey) {
+    public WechatMsgEventHandler(boolean openEncryption, String appId, String eventToken, String encodingAesKey) {
         this.eventToken = eventToken;
         if (openEncryption) {
             try {
-                wxBizMsgCrypt = new WXBizMsgCrypt(eventToken, encodingAESKey, appId);
+                wxBizMsgCrypt = new WXBizMsgCrypt(eventToken, encodingAesKey, appId);
             } catch (AesException e) {
                 e.printStackTrace();
             }
@@ -81,7 +81,7 @@ public class WechatMsgEventHandler {
      * @return WechatEvent
      */
     public WechatEvent xml2WechatEvent(String timestamp, String nonce, String encryptType, String msgSignature,
-                                     String requestBody) throws WechatException {
+                                       String requestBody) throws WechatException {
         if (ENCRYPT_TYPE.equals(encryptType)) {
             if (wxBizMsgCrypt == null) {
                 throw new WechatException("未设置服务器配置参数 Token 与 EncodingAESKey");
@@ -107,12 +107,12 @@ public class WechatMsgEventHandler {
      */
     public String wechatReply2Xml(WechatReply reply) {
         String replyXml = XmlUtil.beanToXml(reply);
-        System.out.println(replyXml);
         if (wxBizMsgCrypt == null) {
             return replyXml;
         } else {
             try {
-                return wxBizMsgCrypt.encryptMsg(replyXml, String.valueOf(System.currentTimeMillis() / 1000), StringUtil.randomStr(18));
+                return wxBizMsgCrypt.encryptMsg(replyXml, String.valueOf(System.currentTimeMillis() / 1000),
+                        StringUtil.randomStr(18));
             } catch (AesException e) {
                 e.printStackTrace();
             }
