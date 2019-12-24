@@ -5,7 +5,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 /**
  * 设置用户备注名
  *
- * @author : Liu Zeming
+ * @author ZM
  * @date : 2018-12-28 23:58
  */
 public class UpdateWechatUserRemarkName {

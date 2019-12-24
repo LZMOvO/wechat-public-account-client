@@ -5,7 +5,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 /**
  * 接口请求错误信息
  *
- * @author : Liu Zeming
+ * @author ZM
  * @date : 2018-12-14 04:15
  */
 public class ErrorInfo {

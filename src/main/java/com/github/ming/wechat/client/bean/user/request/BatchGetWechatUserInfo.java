@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * 批量获取用户基本信息
  *
- * @author : Liu Zeming
+ * @author ZM
  * @date : 2018-12-29 00:30
  */
 public class BatchGetWechatUserInfo {

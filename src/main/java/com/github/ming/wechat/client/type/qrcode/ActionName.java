@@ -3,7 +3,7 @@ package com.github.ming.wechat.client.type.qrcode;
 /**
  * 二维码类型
  *
- * @author : Liu Zeming
+ * @author ZM
  * @date : 2019-02-16 14:49
  */
 public enum ActionName {

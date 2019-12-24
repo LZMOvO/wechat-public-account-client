@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * BatchSetUserTag
  *
- * @author : Liu Zeming
+ * @author ZM
  * @date : 2018-12-27 02:41
  */
 public class BatchOperateWechatUserTag {

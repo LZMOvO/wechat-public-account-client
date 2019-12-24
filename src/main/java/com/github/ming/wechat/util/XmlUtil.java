@@ -13,7 +13,7 @@ import java.io.StringWriter;
 /**
  * xml & bean 转换工具类
  *
- * @author Zeming
+ * @author ZM
  * @date 2018/2/4 14:16
  */
 public class XmlUtil {

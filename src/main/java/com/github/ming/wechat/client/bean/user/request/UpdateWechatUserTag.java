@@ -3,7 +3,7 @@ package com.github.ming.wechat.client.bean.user.request;
 /**
  * 配合创建标签接口提交参数格式构造的bean
  *
- * @author : Liu Zeming
+ * @author ZM
  * @date : 2018-12-20 01:39
  */
 public class UpdateWechatUserTag {

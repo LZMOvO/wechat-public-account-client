@@ -3,7 +3,7 @@ package com.github.ming.wechat.client.bean.user.request;
 /**
  * DeleteUserTag
  *
- * @author : Liu Zeming
+ * @author ZM
  * @date : 2018-12-27 00:43
  */
 public class DeleteWechatUserTag {

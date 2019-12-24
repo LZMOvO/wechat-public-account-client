@@ -3,7 +3,7 @@ package com.github.ming.wechat.client.type.media;
 /**
  * 上传素材类型
  *
- * @author : Liu Zeming
+ * @author ZM
  * @date : 2019-01-07 11:20
  */
 public enum MediaType {

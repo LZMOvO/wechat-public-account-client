@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * httpClient请求工具
  *
- * @author Zeming
+ * @author ZM
  */
 public class HttpUtil {
 

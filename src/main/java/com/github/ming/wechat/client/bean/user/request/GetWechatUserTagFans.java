@@ -5,7 +5,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 /**
  * 获取标签下粉丝列表
  *
- * @author : Liu Zeming
+ * @author ZM
  * @date : 2018-12-27 01:49
  */
 public class GetWechatUserTagFans {
