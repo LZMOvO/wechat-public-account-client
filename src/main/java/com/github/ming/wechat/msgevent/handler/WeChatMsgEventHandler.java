@@ -64,7 +64,6 @@ public class WeChatMsgEventHandler {
         paramSet.add(timestamp);
         paramSet.add(this.eventToken);
         String validateValue = DigestUtils.sha1Hex(paramSet.pollFirst() + paramSet.pollFirst() + paramSet.pollFirst());
-        paramSet = null;
         return validateValue.equals(signature);
     }
 

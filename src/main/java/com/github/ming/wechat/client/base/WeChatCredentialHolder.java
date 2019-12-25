@@ -1,4 +1,4 @@
-package com.github.ming.wechat.client;
+package com.github.ming.wechat.client.base;
 
 import com.github.ming.wechat.client.apiurl.WeChatApiUrls;
 import com.github.ming.wechat.client.bean.credential.WeChatAccessToken;

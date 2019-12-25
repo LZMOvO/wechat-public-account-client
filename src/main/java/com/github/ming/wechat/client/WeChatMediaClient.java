@@ -2,6 +2,10 @@ package com.github.ming.wechat.client;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.ming.wechat.client.apiurl.WeChatApiUrls;
+import com.github.ming.wechat.client.base.WeChatClientCredential;
+import com.github.ming.wechat.client.base.WeChatCredentialHolder;
+import com.github.ming.wechat.client.base.WeChatRequest;
+import com.github.ming.wechat.client.base.WeChatResponse;
 import com.github.ming.wechat.client.bean.media.WeChatMaterialVideoDesc;
 import com.github.ming.wechat.client.bean.media.WeChatMediaImageText;
 import com.github.ming.wechat.client.bean.media.WeChatMediaInfo;
@@ -17,7 +21,7 @@ import java.util.List;
  * @author ZM
  * @date : 2019-01-07 06:48
  */
-public class WeChatMediaClient {
+public class WeChatMediaClient extends WeChatClientCredential {
 
     /**
      * 1m字节数
@@ -39,10 +43,8 @@ public class WeChatMediaClient {
      */
     private static final int SIXTY_FOUR_KB = 1024 * 64;
 
-    private WeChatCredentialHolder credentialHolder;
-
     public WeChatMediaClient(WeChatCredentialHolder credentialHolder) {
-        this.credentialHolder = credentialHolder;
+        this.setCredentialHolder(credentialHolder);
     }
 
     /**
@@ -75,7 +77,8 @@ public class WeChatMediaClient {
         if (MediaType.THUMB.getType().equals(type) && file.length() > SIXTY_FOUR_KB) {
             throw new WeChatException("缩略图大小超过64KB");
         }
-        String result = WeChatRequest.upload(WeChatApiUrls.MEDIA_UPLOAD_URL.replace("TYPE", type), file, credentialHolder);
+        String result = WeChatRequest.upload(WeChatApiUrls.MEDIA_UPLOAD_URL.replace("TYPE", type), file,
+                this.getCredentialHolder());
         return WeChatResponse.result2Bean(result, WeChatMediaInfo.class);
     }
 
@@ -93,7 +96,7 @@ public class WeChatMediaClient {
         }
         JSONObject params = new JSONObject(3);
         params.put("articles", imageTextList);
-        String result = WeChatRequest.post(WeChatApiUrls.PERMANENT_MEDIA_UPLOAD_URL, params.toJSONString(), credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.PERMANENT_MEDIA_UPLOAD_URL, params.toJSONString(), this.getCredentialHolder());
         return WeChatResponse.result2Bean(result, WeChatMediaInfo.class).getMediaId();
     }
 
@@ -111,7 +114,7 @@ public class WeChatMediaClient {
         if (file.length() > ONE_M_BYTE) {
             throw new WeChatException("图片大小超过1M");
         }
-        String result = WeChatRequest.upload(WeChatApiUrls.MEDIA_UPLOADIMG_UPLOAD_URL, file, credentialHolder);
+        String result = WeChatRequest.upload(WeChatApiUrls.MEDIA_UPLOADIMG_UPLOAD_URL, file, this.getCredentialHolder());
         return WeChatResponse.result2Bean(result, JSONObject.class).getString("url");
     }
 
@@ -143,7 +146,8 @@ public class WeChatMediaClient {
         if (MediaType.THUMB.getType().equals(type) && file.length() > SIXTY_FOUR_KB) {
             throw new WeChatException("缩略图大小超过64KB");
         }
-        String result = WeChatRequest.upload(WeChatApiUrls.MATERIAL_UPLOAD_URL.replace("TYPE", type), file, credentialHolder);
+        String result = WeChatRequest.upload(WeChatApiUrls.MATERIAL_UPLOAD_URL.replace("TYPE", type), file,
+                this.getCredentialHolder());
         return WeChatResponse.result2Bean(result, WeChatMediaInfo.class);
     }
 
@@ -165,7 +169,7 @@ public class WeChatMediaClient {
             throw new WeChatException("视频大小超过10M");
         }
         String result = WeChatRequest.uploadMaterialVideo(WeChatApiUrls.MATERIAL_UPLOAD_URL.replace("TYPE",
-                MediaType.VIDEO.getType()), file, desc, credentialHolder);
+                MediaType.VIDEO.getType()), file, desc, this.getCredentialHolder());
         return WeChatResponse.result2Bean(result, WeChatMediaInfo.class);
     }
 }

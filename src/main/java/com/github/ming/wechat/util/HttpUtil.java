@@ -37,7 +37,7 @@ import java.io.InterruptedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -139,7 +139,6 @@ public class HttpUtil {
             return httpResult(httpGet);
         } catch (URISyntaxException e) {
             logger.error("携带头信息，参数的get请求   请求出错：" + e.getMessage(), e);
-            e.printStackTrace();
             return null;
         }
     }
@@ -190,7 +189,6 @@ public class HttpUtil {
             return httpResult(httpPost);
         } catch (UnsupportedEncodingException e) {
             logger.error("携带头信息，参数的post请求   请求出错：" + e.getMessage(), e);
-            e.printStackTrace();
             return null;
         }
     }
@@ -237,7 +235,7 @@ public class HttpUtil {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         builder.addBinaryBody("file", file, ContentType.DEFAULT_BINARY, file.getName());
-        builder.setCharset(Charset.forName("UTF-8"));
+        builder.setCharset(StandardCharsets.UTF_8);
         HttpEntity entity = builder.build();
         httpPost.setEntity(entity);
         return httpResult(httpPost);
@@ -259,7 +257,7 @@ public class HttpUtil {
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         for (int i = 0; i < files.size(); i++) {
             builder.addBinaryBody("file_" + i, files.get(i), ContentType.DEFAULT_BINARY, files.get(i).getName());
-            builder.setCharset(Charset.forName("UTF-8"));
+            builder.setCharset(StandardCharsets.UTF_8);
         }
         HttpEntity entity = builder.build();
         httpPost.setEntity(entity);
@@ -280,12 +278,12 @@ public class HttpUtil {
         requestHeader(headers, httpPost);
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.addBinaryBody("file", file, ContentType.DEFAULT_BINARY, file.getName());
-        builder.setCharset(Charset.forName("UTF-8"));
+        builder.setCharset(StandardCharsets.UTF_8);
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         if (params != null && params.size() > 0) {
             for (Entry<String, Object> entry : params.entrySet()) {
                 builder.addTextBody(entry.getKey(), String.valueOf(entry.getValue()), ContentType.DEFAULT_BINARY);
-                builder.setCharset(Charset.forName("UTF-8"));
+                builder.setCharset(StandardCharsets.UTF_8);
             }
         }
         HttpEntity entity = builder.build();
@@ -300,7 +298,7 @@ public class HttpUtil {
      * @param file 待上传文件
      * @return
      */
-    public static String uploadForWechat(String url, File file) {
+    public static String uploadForWeChat(String url, File file) {
         if (file == null || file.length() == 0) {
             return null;
         }
@@ -315,7 +313,7 @@ public class HttpUtil {
      * @param jsonParams json串
      * @return
      */
-    public static String uploadForWechatMaterialVideo(String url, File file, String jsonParams) {
+    public static String uploadForWeChatMaterialVideo(String url, File file, String jsonParams) {
         if (file == null || file.length() == 0) {
             return null;
         }
@@ -340,7 +338,7 @@ public class HttpUtil {
         if (jsonParams != null && !"".equals(jsonParams)) {
             builder.addTextBody("description", jsonParams);
         }
-        builder.setCharset(Charset.forName("UTF-8"));
+        builder.setCharset(StandardCharsets.UTF_8);
         HttpEntity entity = builder.build();
         httpPost.setEntity(entity);
         return httpPost;
@@ -363,13 +361,13 @@ public class HttpUtil {
                 return EntityUtils.toString(entity);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         } finally {
             if (response != null) {
                 try {
                     response.close();
                 } catch (IOException e1) {
-                    e1.printStackTrace();
+                    logger.error(e1.getMessage(), e1);
                 }
             }
         }

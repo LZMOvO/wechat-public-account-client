@@ -1,6 +1,10 @@
 package com.github.ming.wechat.client;
 
 import com.github.ming.wechat.client.apiurl.WeChatApiUrls;
+import com.github.ming.wechat.client.base.WeChatClientCredential;
+import com.github.ming.wechat.client.base.WeChatCredentialHolder;
+import com.github.ming.wechat.client.base.WeChatRequest;
+import com.github.ming.wechat.client.base.WeChatResponse;
 import com.github.ming.wechat.client.bean.result.ErrorInfo;
 import com.github.ming.wechat.client.bean.user.WeChatUser;
 import com.github.ming.wechat.client.bean.user.WeChatUserOpenIdList;
@@ -22,12 +26,10 @@ import java.util.Map;
  * @author ZM
  * @date : 2018-12-14 17:36
  */
-public final class WeChatUserClient {
-
-    private WeChatCredentialHolder credentialHolder;
+public final class WeChatUserClient extends WeChatClientCredential {
 
     public WeChatUserClient(WeChatCredentialHolder credentialHolder) {
-        this.credentialHolder = credentialHolder;
+        this.setCredentialHolder(credentialHolder);
     }
 
     /*---- 用户标签管理 ----*/
@@ -42,7 +44,8 @@ public final class WeChatUserClient {
         if (StringUtil.isBlank(name)) {
             throw new WeChatException("参数 openId 为空");
         }
-        String result = WeChatRequest.post(WeChatApiUrls.CREATE_USER_TAG_URL, new CreateWechatUserTag(name), credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.CREATE_USER_TAG_URL, new CreateWechatUserTag(name),
+                this.getCredentialHolder());
         WeChatUserTagResult wechatUserTagResult = WeChatResponse.result2Bean(result, WeChatUserTagResult.class);
         return wechatUserTagResult != null ? wechatUserTagResult.getTag() : null;
     }
@@ -53,7 +56,7 @@ public final class WeChatUserClient {
      * @return 标签列表
      */
     public List<WeChatUserTag> userTags() throws WeChatException {
-        String result = WeChatRequest.get(WeChatApiUrls.GET_USER_TAGS_URL, credentialHolder);
+        String result = WeChatRequest.get(WeChatApiUrls.GET_USER_TAGS_URL, this.getCredentialHolder());
         WeChatUserTagListResult wechatUserTagList = WeChatResponse.result2Bean(result, WeChatUserTagListResult.class);
         return wechatUserTagList != null ? wechatUserTagList.getTags() : null;
     }
@@ -72,7 +75,8 @@ public final class WeChatUserClient {
         if (StringUtil.isBlank(name)) {
             throw new WeChatException("标签名为空");
         }
-        String result = WeChatRequest.post(WeChatApiUrls.UPDATE_USER_TAG_URL, new UpdateWechatUserTag(id, name), credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.UPDATE_USER_TAG_URL, new UpdateWechatUserTag(id, name),
+                this.getCredentialHolder());
         return WeChatResponse.errorInfo2Boolean(result);
     }
 
@@ -88,7 +92,7 @@ public final class WeChatUserClient {
         if (id < 0) {
             throw new WeChatException("标签id错误");
         }
-        String result = WeChatRequest.post(WeChatApiUrls.DELETE_USER_TAG_URL, new DeleteWechatUserTag(id), credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.DELETE_USER_TAG_URL, new DeleteWechatUserTag(id), this.getCredentialHolder());
         return WeChatResponse.errorInfo2Boolean(result);
     }
 
@@ -103,7 +107,8 @@ public final class WeChatUserClient {
         if (tagId < 0) {
             throw new WeChatException("标签id错误");
         }
-        String result = WeChatRequest.post(WeChatApiUrls.USER_TAGS_FANS_URL, new GetWechatUserTagFans(tagId, nextOpenId), credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.USER_TAGS_FANS_URL, new GetWechatUserTagFans(tagId, nextOpenId),
+                this.getCredentialHolder());
         WeChatUserTagFansResult wechatUserTagFansResult = WeChatResponse.result2Bean(result, WeChatUserTagFansResult.class);
         return wechatUserTagFansResult != null ? wechatUserTagFansResult.getData().getOpenId() : null;
     }
@@ -123,7 +128,8 @@ public final class WeChatUserClient {
         if (openIdList == null || openIdList.size() == 0 || openIdList.size() > numLimit) {
             throw new WeChatException("传入的openId有误，为空或者超过50个");
         }
-        String result = WeChatRequest.post(WeChatApiUrls.BATCH_SET_USER_TAG_URL, new BatchOperateWechatUserTag(tagId, openIdList), credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.BATCH_SET_USER_TAG_URL, new BatchOperateWechatUserTag(tagId,
+                openIdList), this.getCredentialHolder());
         return WeChatResponse.errorInfo2Boolean(result);
     }
 
@@ -141,7 +147,8 @@ public final class WeChatUserClient {
         if (openIdList == null || openIdList.size() == 0 || openIdList.size() > 50) {
             throw new WeChatException("传入的openId有误，为空或者超过50个");
         }
-        String result = WeChatRequest.post(WeChatApiUrls.BATCH_CANCEL_USER_TAG_URL, new BatchOperateWechatUserTag(tagId, openIdList), credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.BATCH_CANCEL_USER_TAG_URL, new BatchOperateWechatUserTag(tagId,
+                openIdList), this.getCredentialHolder());
         return WeChatResponse.errorInfo2Boolean(result);
     }
 
@@ -157,7 +164,7 @@ public final class WeChatUserClient {
         }
         Map<String, Object> params = new HashMap<>(3);
         params.put("openid", openId);
-        String result = WeChatRequest.post(WeChatApiUrls.GET_USER_TAGS_FOR_USER_URL, params, credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.GET_USER_TAGS_FOR_USER_URL, params, this.getCredentialHolder());
         WeChatUserTagsForUserResult wechatUserTagsForUserResult = WeChatResponse.result2Bean(result, WeChatUserTagsForUserResult.class);
         return wechatUserTagsForUserResult != null ? wechatUserTagsForUserResult.getTagIdList() : null;
     }
@@ -179,7 +186,8 @@ public final class WeChatUserClient {
         if (StringUtil.isBlank(remarkName)) {
             throw new WeChatException("用户备注名有误");
         }
-        String result = WeChatRequest.post(WeChatApiUrls.UPDATE_USER_REMARK_NAME_URL, new UpdateWechatUserRemarkName(openId, remarkName), credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.UPDATE_USER_REMARK_NAME_URL, new UpdateWechatUserRemarkName(openId,
+                remarkName), this.getCredentialHolder());
         return errorInfo2Boolean(result);
     }
 
@@ -197,7 +205,8 @@ public final class WeChatUserClient {
             throw new WeChatException("参数 openId 为空");
         }
         lang = WeChatUtil.standardLang(lang);
-        String result = WeChatRequest.get(WeChatApiUrls.USER_INFO_URL.replace("OPENID", openId).replace("LANG", lang), credentialHolder);
+        String result = WeChatRequest.get(WeChatApiUrls.USER_INFO_URL.replace("OPENID", openId).replace("LANG",
+                lang), this.getCredentialHolder());
         return WeChatResponse.result2Bean(result, WeChatUser.class);
     }
 
@@ -213,7 +222,8 @@ public final class WeChatUserClient {
             throw new WeChatException("参数 openId 为空");
         }
         lang = WeChatUtil.standardLang(lang);
-        String result = WeChatRequest.post(WeChatApiUrls.BATCH_GET_USER_INFO_URL, new BatchGetWechatUserInfo(lang, openIdList), credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.BATCH_GET_USER_INFO_URL, new BatchGetWechatUserInfo(lang,
+                openIdList), this.getCredentialHolder());
         WeChatUserInfoListResult wechatUserInfoListResult = WeChatResponse.result2Bean(result, WeChatUserInfoListResult.class);
         return wechatUserInfoListResult != null ? wechatUserInfoListResult.getUserInfoList() : null;
     }
@@ -230,7 +240,8 @@ public final class WeChatUserClient {
         if (nextOpenId == null) {
             nextOpenId = "";
         }
-        String result = WeChatRequest.get(WeChatApiUrls.USER_LIST_URL.replace("NEXT_OPENID", nextOpenId), credentialHolder);
+        String result = WeChatRequest.get(WeChatApiUrls.USER_LIST_URL.replace("NEXT_OPENID", nextOpenId),
+                this.getCredentialHolder());
         return WeChatResponse.result2Bean(result, WeChatUserOpenIdList.class);
     }
 
@@ -245,7 +256,7 @@ public final class WeChatUserClient {
     public WeChatUserOpenIdList blacklist(String nextOpenId) {
         Map<String, Object> params = new HashMap<>(3);
         params.put("begin_openid", nextOpenId);
-        String result = WeChatRequest.post(WeChatApiUrls.BLACKLIST_URL, params, credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.BLACKLIST_URL, params, this.getCredentialHolder());
         WeChatUserBlacklistResult wechatUserBlacklistResult = WeChatResponse.result2Bean(result, WeChatUserBlacklistResult.class);
         WeChatUserOpenIdList wechatUserOpenIdList = new WeChatUserOpenIdList();
         wechatUserOpenIdList.setCount(wechatUserBlacklistResult.getCount());
@@ -269,7 +280,7 @@ public final class WeChatUserClient {
         Map<String, Object> params = new HashMap<>(3);
         params.put("openid_list", openIdList);
         String result = WeChatRequest.post(operate ? WeChatApiUrls.BATCH_BLACK_USER_URL : WeChatApiUrls.BATCH_UNBLACK_USER_URL,
-                params, credentialHolder);
+                params, this.getCredentialHolder());
         return errorInfo2Boolean(result);
     }
 
