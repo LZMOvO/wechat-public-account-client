@@ -1,4 +1,4 @@
-package com.github.ming.wechat.client;
+package com.github.ming.wechat.client.base;
 
 import com.github.ming.wechat.client.apiurl.WeChatApiUrls;
 import com.github.ming.wechat.client.bean.credential.WeChatAccessToken;
@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * WeChatCredentialHolder
  *
- * @author ZM
+ * @author : ZM
  * @date : 2019-01-02 22:42
  */
 public class WeChatCredentialHolder {
@@ -52,11 +52,10 @@ public class WeChatCredentialHolder {
      * 项目内获取当前可用的accessToken
      *
      * @param refreshToken 是否重新获取accessToken true=是；false=否
-     * @return
+     * @return 新的accessToken
      */
     String getAccessToken(boolean refreshToken) {
-        if (this.accessToken == null || refreshToken || System.currentTimeMillis() / 1000 -
-                this.accessToken.getCreateTime() >= this.accessToken.getExpiresIn()) {
+        if (this.accessToken == null || refreshToken || this.validAccessTokenTimeDiff()) {
             this.resetAccessToken();
         }
         return accessToken.getAccessToken();
@@ -68,17 +67,17 @@ public class WeChatCredentialHolder {
     private void resetAccessToken() {
         if (lock.tryLock()) {
             try {
-                this.accessToken = new WeChatAccessTokenWrapper(this.accessTokenGet());
-                logger.info("重置了access_token");
+                this.accessToken = new WeChatAccessTokenWrapper(this.accessToken());
+                logger.debug("重置了access_token");
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             } finally {
                 lock.unlock();
             }
         } else {
             while (lock.isLocked()) {
                 if (!lock.isLocked()) {
-                    logger.info("啊~我发现有人刷新完token了");
+                    logger.debug("啊~我发现有人刷新完token了");
                     return;
                 }
             }
@@ -88,10 +87,28 @@ public class WeChatCredentialHolder {
     /**
      * 获取accessToken
      */
-    private WeChatAccessToken accessTokenGet() {
-        String result = HttpUtil.get(WeChatApiUrls.ACCESS_TOKEN_URL.replace("APPID", this.appId)
-                .replace("APPSECRET", this.appSecret));
+    private WeChatAccessToken accessToken() {
+        String result = HttpUtil.get(WeChatApiUrls.ACCESS_TOKEN_URL.replace("APPID", this.appId).replace(
+                "APPSECRET", this.appSecret));
         return WeChatResponse.result2Bean(result, WeChatAccessToken.class);
+    }
+
+    /**
+     * 判断accessToken是否过期
+     *
+     * @return true=过期
+     */
+    private boolean validAccessTokenTimeDiff() {
+        return this.nowSeconds() - this.accessToken.getCreateTime() >= this.accessToken.getExpiresIn();
+    }
+
+    /**
+     * 获取当前时间的秒数
+     *
+     * @return 当前时间的秒数
+     */
+    private long nowSeconds() {
+        return System.currentTimeMillis() / 1000;
     }
 
     int getAccessTokenTimeoutRetry() {

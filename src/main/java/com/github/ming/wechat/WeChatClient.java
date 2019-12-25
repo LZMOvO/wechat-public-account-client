@@ -1,6 +1,10 @@
 package com.github.ming.wechat;
 
-import com.github.ming.wechat.client.*;
+import com.github.ming.wechat.client.WeChatAccountManageClient;
+import com.github.ming.wechat.client.WeChatMediaClient;
+import com.github.ming.wechat.client.WeChatMenuClient;
+import com.github.ming.wechat.client.WeChatUserClient;
+import com.github.ming.wechat.client.base.WeChatCredentialHolder;
 import com.github.ming.wechat.client.bean.media.WeChatMaterialVideoDesc;
 import com.github.ming.wechat.client.bean.media.WeChatMediaImageText;
 import com.github.ming.wechat.client.bean.media.WeChatMediaInfo;
@@ -21,7 +25,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * WechatClient
+ * WeChatClient
  *
  * @author ZM
  * @date : 2018-12-14 01:39
@@ -46,9 +50,10 @@ public class WeChatClient {
         accountManageClient = new WeChatAccountManageClient(credentialHolder);
     }
 
-    public WeChatClient(String appId, String appSecret, int timeoutRetry, boolean openEncryption, String eventToken, String encodingAESKey) {
+    public WeChatClient(String appId, String appSecret, int timeoutRetry, boolean openEncryption, String eventToken,
+                        String encodingAesKey) {
         WeChatCredentialHolder credentialHolder = new WeChatCredentialHolder(appId, appSecret, timeoutRetry);
-        msgEventHandler = new WeChatMsgEventHandler(openEncryption, appId, eventToken, encodingAESKey);
+        msgEventHandler = new WeChatMsgEventHandler(openEncryption, appId, eventToken, encodingAesKey);
         menuClient = new WeChatMenuClient(credentialHolder);
         userClient = new WeChatUserClient(credentialHolder);
         mediaClient = new WeChatMediaClient(credentialHolder);
@@ -90,11 +95,11 @@ public class WeChatClient {
      * 创建个性化菜单
      * 自定义菜单最多包括3个一级菜单，每个一级菜单最多包含5个二级菜单
      *
-     * @param wechatMenuButtonGroup 个性化菜单参数
+     * @param weChatMenuButtonGroup 个性化菜单参数
      * @return true=成功
      */
-    public boolean createConditionalMenu(WeChatMenuButtonGroup wechatMenuButtonGroup) throws WeChatException {
-        return menuClient.createConditionalMenu(wechatMenuButtonGroup);
+    public boolean createConditionalMenu(WeChatMenuButtonGroup weChatMenuButtonGroup) throws WeChatException {
+        return menuClient.createConditionalMenu(weChatMenuButtonGroup);
     }
 
     /**
@@ -275,7 +280,7 @@ public class WeChatClient {
      * @param openIdList 取消拉黑的列表
      * @return true=成功
      */
-    public boolean unblackUser(List<String> openIdList) {
+    public boolean unBlackUser(List<String> openIdList) {
         return userClient.blackUserOperate(false, openIdList);
     }
 
@@ -365,14 +370,14 @@ public class WeChatClient {
      */
     public boolean serverValidate(String signature, String timestamp, String nonce) {
         if (msgEventHandler == null) {
-            throw new WeChatException("未初始化WechatEventHandler");
+            throw new WeChatException("未初始化WeChatEventHandler");
         }
         return msgEventHandler.serverValidate(signature, timestamp, nonce);
     }
 
     /**
-     * 处理接收到的微信发来的消息、事件推送，由xml转为WechatEvent
-     * 加密消息、非加密消息皆可以用此方法处理，是否开启加密在WechatMsgEventHandler初始化的时候配置。
+     * 处理接收到的微信发来的消息、事件推送，由xml转为WeChatEvent
+     * 加密消息、非加密消息皆可以用此方法处理，是否开启加密在WeChatMsgEventHandler初始化的时候配置。
      * 方法参数全部可从微信发来的消息推送的post请求中获取到，可直接在接收推送的post接口中设置相应参数获取，然后传入本方法即可。
      *
      * @param timestamp    timestamp
@@ -382,22 +387,22 @@ public class WeChatClient {
      * @param requestBody  requestBody
      * @return WechatEvent
      */
-    public WeChatEvent xml2WechatEvent(String timestamp, String nonce, String encryptType, String msgSignature,
+    public WeChatEvent xml2WeChatEvent(String timestamp, String nonce, String encryptType, String msgSignature,
                                        String requestBody) throws WeChatException {
         if (msgEventHandler == null) {
-            throw new WeChatException("未初始化WechatEventHandler");
+            throw new WeChatException("未初始化WeChatEventHandler");
         }
-        return msgEventHandler.xml2WechatEvent(timestamp, nonce, encryptType, msgSignature, requestBody);
+        return msgEventHandler.xml2WeChatEvent(timestamp, nonce, encryptType, msgSignature, requestBody);
     }
 
     /**
-     * 微信发来的消息、事件推送的回复，由WechatReply转为xml
-     * 回复消息的加密消息、非加密消息皆可以用此方法处理，是否开启加密在WechatMsgEventHandler初始化的时候配置。
+     * 微信发来的消息、事件推送的回复，由WeChatReply转为xml
+     * 回复消息的加密消息、非加密消息皆可以用此方法处理，是否开启加密在WeChatMsgEventHandler初始化的时候配置。
      *
      * @param reply 回复的内容bean
      * @return xml字符串，开启加密的话即为加密后的xml字符串。
      */
-    public String wechatReply2Xml(WeChatReply reply) {
-        return msgEventHandler.wechatReply2Xml(reply);
+    public String weChatReply2Xml(WeChatReply reply) {
+        return msgEventHandler.weChatReply2Xml(reply);
     }
 }

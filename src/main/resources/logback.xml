@@ -8,10 +8,8 @@
             </pattern>
         </encoder>
     </appender>
-    <!-- 日志输出 -->
+
     <root level="INFO">
         <appender-ref ref="console"/>
-        <appender-ref ref="file"/>
-        <appender-ref ref="error"/>
     </root>
 </configuration>

@@ -1,4 +1,4 @@
-package com.github.ming.wechat.client;
+package com.github.ming.wechat.client.base;
 
 import com.alibaba.fastjson.JSON;
 import com.github.ming.wechat.client.bean.result.ErrorInfo;
@@ -12,7 +12,7 @@ import com.github.ming.wechat.util.StringUtil;
  * @author ZM
  * @date : 2019-01-02 22:54
  */
-class WeChatResponse {
+public class WeChatResponse {
     /**
      * 从请求结果中判断请求失败的标识
      */
@@ -27,7 +27,7 @@ class WeChatResponse {
      * @return
      * @throws WeChatException 微信错误异常信息
      */
-    static <T> T result2Bean(String wechatResult, Class<T> clazz) throws WeChatException {
+    public static <T> T result2Bean(String wechatResult, Class<T> clazz) throws WeChatException {
         if (StringUtil.isBlank(wechatResult)) {
             throw new WeChatException("微信api请求结果为空");
         }
@@ -46,7 +46,7 @@ class WeChatResponse {
      * @param result 微信请求失败的错误码
      * @return true=是accessToken超时；false=不是
      */
-    static boolean judgeAccessTokenTimeout(String result) {
+    public static boolean judgeAccessTokenTimeout(String result) {
         if (!StringUtil.isBlank(result) && result.contains(RESULT_FAULT_FLAG)) {
             ErrorInfo errorInfo = JSON.parseObject(result, ErrorInfo.class);
             return errorInfo.getErrorCode() == WeChatErrorCode.IllegalAccessToken.getCode() ||
@@ -57,7 +57,7 @@ class WeChatResponse {
         }
     }
 
-    static boolean errorInfo2Boolean(String result) {
+    public static boolean errorInfo2Boolean(String result) {
         ErrorInfo errorInfo = WeChatResponse.result2Bean(result, ErrorInfo.class);
         if (errorInfo.getErrorCode() == 0) {
             return true;

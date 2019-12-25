@@ -64,7 +64,6 @@ public class WeChatMsgEventHandler {
         paramSet.add(timestamp);
         paramSet.add(this.eventToken);
         String validateValue = DigestUtils.sha1Hex(paramSet.pollFirst() + paramSet.pollFirst() + paramSet.pollFirst());
-        paramSet = null;
         return validateValue.equals(signature);
     }
 
@@ -80,7 +79,7 @@ public class WeChatMsgEventHandler {
      * @param requestBody  微信发来的请求体
      * @return WechatEvent
      */
-    public WeChatEvent xml2WechatEvent(String timestamp, String nonce, String encryptType, String msgSignature,
+    public WeChatEvent xml2WeChatEvent(String timestamp, String nonce, String encryptType, String msgSignature,
                                        String requestBody) throws WeChatException {
         if (ENCRYPT_TYPE.equals(encryptType)) {
             if (wxBizMsgCrypt == null) {
@@ -105,7 +104,7 @@ public class WeChatMsgEventHandler {
      * @param reply 回复的内容bean
      * @return xml字符串，开启加密的话即为加密后的xml字符串。
      */
-    public String wechatReply2Xml(WeChatReply reply) {
+    public String weChatReply2Xml(WeChatReply reply) {
         String replyXml = XmlUtil.beanToXml(reply);
         if (wxBizMsgCrypt == null) {
             return replyXml;

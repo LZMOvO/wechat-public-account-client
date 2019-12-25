@@ -1,6 +1,10 @@
 package com.github.ming.wechat.client;
 
 import com.github.ming.wechat.client.apiurl.WeChatApiUrls;
+import com.github.ming.wechat.client.base.WeChatClientCredential;
+import com.github.ming.wechat.client.base.WeChatCredentialHolder;
+import com.github.ming.wechat.client.base.WeChatRequest;
+import com.github.ming.wechat.client.base.WeChatResponse;
 import com.github.ming.wechat.client.bean.menu.WeChatMenuButton;
 import com.github.ming.wechat.client.bean.menu.WeChatMenuButtonGroup;
 import com.github.ming.wechat.client.bean.menu.response.WeChatMenusResult;
@@ -17,12 +21,10 @@ import java.util.Map;
  * @author ZM
  * @date : 2019-01-04 04:17
  */
-public class WeChatMenuClient {
-
-    private WeChatCredentialHolder credentialHolder;
+public class WeChatMenuClient extends WeChatClientCredential {
 
     public WeChatMenuClient(WeChatCredentialHolder credentialHolder) {
-        this.credentialHolder = credentialHolder;
+        this.setCredentialHolder(credentialHolder);
     }
 
     /*---- 自定义菜单 ----*/
@@ -40,7 +42,7 @@ public class WeChatMenuClient {
         }
         Map<String, Object> params = new HashMap<>(3);
         params.put("button", menuButtonList);
-        String result = WeChatRequest.post(WeChatApiUrls.CREATE_MENU_URL, params, credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.CREATE_MENU_URL, params, this.getCredentialHolder());
         return WeChatResponse.errorInfo2Boolean(result);
     }
 
@@ -50,7 +52,7 @@ public class WeChatMenuClient {
      * @return 标签列表
      */
     public WeChatMenusResult menus() throws WeChatException {
-        String result = WeChatRequest.get(WeChatApiUrls.GET_MENU_URL, credentialHolder);
+        String result = WeChatRequest.get(WeChatApiUrls.GET_MENU_URL, this.getCredentialHolder());
         return WeChatResponse.result2Bean(result, WeChatMenusResult.class);
     }
 
@@ -61,7 +63,7 @@ public class WeChatMenuClient {
      * @return true=成功
      */
     public boolean deleteMenus() throws WeChatException {
-        String result = WeChatRequest.get(WeChatApiUrls.DELETE_MENU_URL, credentialHolder);
+        String result = WeChatRequest.get(WeChatApiUrls.DELETE_MENU_URL, this.getCredentialHolder());
         return WeChatResponse.errorInfo2Boolean(result);
     }
 
@@ -77,7 +79,7 @@ public class WeChatMenuClient {
         if (wechatMenuButtonGroup == null) {
             throw new WeChatException("创建菜单的内容为空");
         }
-        String result = WeChatRequest.post(WeChatApiUrls.CREATE_CONDITIONAL_MENU_URL, wechatMenuButtonGroup, credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.CREATE_CONDITIONAL_MENU_URL, wechatMenuButtonGroup, this.getCredentialHolder());
         return WeChatResponse.errorInfo2Boolean(result);
     }
 
@@ -89,7 +91,7 @@ public class WeChatMenuClient {
     public boolean deleteConditionalMenus(int menuId) throws WeChatException {
         Map<String, Object> params = new HashMap<>(3);
         params.put("menuid", menuId);
-        String result = WeChatRequest.post(WeChatApiUrls.DELETE_CONDITIONAL_MENU_URL, params, credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.DELETE_CONDITIONAL_MENU_URL, params, this.getCredentialHolder());
         return WeChatResponse.errorInfo2Boolean(result);
     }
 
@@ -105,8 +107,7 @@ public class WeChatMenuClient {
         }
         Map<String, Object> params = new HashMap<>(3);
         params.put("user_id", userId);
-        String result = WeChatRequest.post(WeChatApiUrls.TRY_MATCH_MENU_URL, params, credentialHolder);
+        String result = WeChatRequest.post(WeChatApiUrls.TRY_MATCH_MENU_URL, params, this.getCredentialHolder());
         return WeChatResponse.result2Bean(result, WeChatMenuButtonGroup.class);
     }
-
 }
