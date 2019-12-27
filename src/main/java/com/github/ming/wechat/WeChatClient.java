@@ -25,7 +25,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * WechatClient
+ * WeChatClient
  *
  * @author ZM
  * @date : 2018-12-14 01:39
@@ -50,7 +50,8 @@ public class WeChatClient {
         accountManageClient = new WeChatAccountManageClient(credentialHolder);
     }
 
-    public WeChatClient(String appId, String appSecret, int timeoutRetry, boolean openEncryption, String eventToken, String encodingAesKey) {
+    public WeChatClient(String appId, String appSecret, int timeoutRetry, boolean openEncryption, String eventToken,
+                        String encodingAesKey) {
         WeChatCredentialHolder credentialHolder = new WeChatCredentialHolder(appId, appSecret, timeoutRetry);
         msgEventHandler = new WeChatMsgEventHandler(openEncryption, appId, eventToken, encodingAesKey);
         menuClient = new WeChatMenuClient(credentialHolder);
@@ -391,7 +392,7 @@ public class WeChatClient {
         if (msgEventHandler == null) {
             throw new WeChatException("未初始化WeChatEventHandler");
         }
-        return msgEventHandler.xml2WechatEvent(timestamp, nonce, encryptType, msgSignature, requestBody);
+        return msgEventHandler.xml2WeChatEvent(timestamp, nonce, encryptType, msgSignature, requestBody);
     }
 
     /**
@@ -402,6 +403,6 @@ public class WeChatClient {
      * @return xml字符串，开启加密的话即为加密后的xml字符串。
      */
     public String weChatReply2Xml(WeChatReply reply) {
-        return msgEventHandler.wechatReply2Xml(reply);
+        return msgEventHandler.weChatReply2Xml(reply);
     }
 }
