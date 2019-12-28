@@ -37,6 +37,7 @@ import java.io.InterruptedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,8 +58,7 @@ public class HttpUtil {
 
     private static CloseableHttpClient httpClient = null;
 
-    private static RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(2 * 1000)
-            .setSocketTimeout(2 * 1000).setConnectionRequestTimeout(500).build();
+    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     static {
         initHttpClient();
@@ -111,7 +111,7 @@ public class HttpUtil {
             HttpGet httpGet = new HttpGet(uriBuilder.build());
             return httpResult(httpGet);
         } catch (URISyntaxException e) {
-            logger.error("携带参数get请求  请求出错：" + e.getMessage(), e);
+            logger.error("携带参数get请求 请求出错：" + e.getMessage(), e);
             return null;
         }
     }
@@ -137,7 +137,7 @@ public class HttpUtil {
             }
             return httpResult(httpGet);
         } catch (URISyntaxException e) {
-            logger.error("携带头信息，参数的get请求   请求出错：" + e.getMessage(), e);
+            logger.error("携带头信息，参数的get请求 请求出错：" + e.getMessage(), e);
             return null;
         }
     }
@@ -154,7 +154,7 @@ public class HttpUtil {
     }
 
     /**
-     * 携带参数的post请求，参数编码UTF-8
+     * 携带参数的post请求
      *
      * @param url    请求url
      * @param params 请求参数map集合
@@ -163,7 +163,7 @@ public class HttpUtil {
     public static String post(String url, Map<String, Object> params) {
         try {
             HttpPost httpPost = new HttpPost(url);
-            httpPost.setEntity(new UrlEncodedFormEntity(params2NVPs(params), "UTF-8"));
+            httpPost.setEntity(new UrlEncodedFormEntity(params2NVPs(params), DEFAULT_CHARSET.toString()));
             return httpResult(httpPost);
         } catch (UnsupportedEncodingException e) {
             logger.error("携带参数的post请求   请求出错：" + e.getMessage(), e);
@@ -173,7 +173,7 @@ public class HttpUtil {
     }
 
     /**
-     * 携带头信息，参数的post请求，参数编码UTF-8
+     * 携带头信息，参数的post请求
      *
      * @param url     请求url
      * @param headers 请求头map结合
@@ -184,7 +184,7 @@ public class HttpUtil {
         try {
             HttpPost httpPost = new HttpPost(url);
             requestHeader(headers, httpPost);
-            httpPost.setEntity(new UrlEncodedFormEntity(params2NVPs(params), "UTF-8"));
+            httpPost.setEntity(new UrlEncodedFormEntity(params2NVPs(params), DEFAULT_CHARSET.toString()));
             return httpResult(httpPost);
         } catch (UnsupportedEncodingException e) {
             logger.error("携带头信息，参数的post请求   请求出错：" + e.getMessage(), e);
@@ -193,7 +193,7 @@ public class HttpUtil {
     }
 
     /**
-     * json形式的post请求，参数编码UTF-8
+     * json形式的post请求
      *
      * @param url        请求url
      * @param jsonParams 请求参数json串
@@ -201,13 +201,14 @@ public class HttpUtil {
      */
     public static String post(String url, String jsonParams) {
         HttpPost httpPost = new HttpPost(url);
-        StringEntity stringEntity = new StringEntity(jsonParams, ContentType.create("application/json", "UTF-8"));
+        StringEntity stringEntity = new StringEntity(jsonParams, ContentType.create("application/json",
+                DEFAULT_CHARSET.toString()));
         httpPost.setEntity(stringEntity);
         return httpResult(httpPost);
     }
 
     /**
-     * xml形式的post请求，参数编码UTF-8
+     * xml形式的post请求
      *
      * @param url       请求url
      * @param xmlParams 请求参数xml串
@@ -215,7 +216,8 @@ public class HttpUtil {
      */
     public static String postXml(String url, String xmlParams) {
         HttpPost httpPost = new HttpPost(url);
-        StringEntity stringEntity = new StringEntity(xmlParams, ContentType.create("application/xml", "UTF-8"));
+        StringEntity stringEntity = new StringEntity(xmlParams, ContentType.create("application/xml",
+                DEFAULT_CHARSET.toString()));
         httpPost.setEntity(stringEntity);
         return httpResult(httpPost);
     }
@@ -232,7 +234,7 @@ public class HttpUtil {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         builder.addBinaryBody("file", file, ContentType.DEFAULT_BINARY, file.getName());
-        builder.setCharset(StandardCharsets.UTF_8);
+        builder.setCharset(DEFAULT_CHARSET);
         HttpEntity entity = builder.build();
         httpPost.setEntity(entity);
         return httpResult(httpPost);
@@ -254,7 +256,7 @@ public class HttpUtil {
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         for (int i = 0; i < files.size(); i++) {
             builder.addBinaryBody("file_" + i, files.get(i), ContentType.DEFAULT_BINARY, files.get(i).getName());
-            builder.setCharset(StandardCharsets.UTF_8);
+            builder.setCharset(DEFAULT_CHARSET);
         }
         HttpEntity entity = builder.build();
         httpPost.setEntity(entity);
@@ -275,12 +277,12 @@ public class HttpUtil {
         requestHeader(headers, httpPost);
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.addBinaryBody("file", file, ContentType.DEFAULT_BINARY, file.getName());
-        builder.setCharset(StandardCharsets.UTF_8);
+        builder.setCharset(DEFAULT_CHARSET);
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         if (params != null && params.size() > 0) {
             for (Entry<String, Object> entry : params.entrySet()) {
                 builder.addTextBody(entry.getKey(), String.valueOf(entry.getValue()), ContentType.DEFAULT_BINARY);
-                builder.setCharset(StandardCharsets.UTF_8);
+                builder.setCharset(DEFAULT_CHARSET);
             }
         }
         HttpEntity entity = builder.build();
@@ -299,7 +301,7 @@ public class HttpUtil {
         if (file == null || file.length() == 0) {
             return null;
         }
-        return httpResult(wechatUploadPost(url, file, null));
+        return httpResult(weChatUploadPost(url, file, null));
     }
 
     /**
@@ -314,7 +316,7 @@ public class HttpUtil {
         if (file == null || file.length() == 0) {
             return null;
         }
-        return httpResult(wechatUploadPost(url, file, jsonParams));
+        return httpResult(weChatUploadPost(url, file, jsonParams));
     }
 
     /**
@@ -324,7 +326,7 @@ public class HttpUtil {
      * @param file 上传的文件
      * @return HttpPost
      */
-    private static HttpPost wechatUploadPost(String url, File file, String jsonParams) {
+    private static HttpPost weChatUploadPost(String url, File file, String jsonParams) {
         HttpPost httpPost = new HttpPost(url);
         httpPost.setHeader("Connection", "Keep-Alive");
         httpPost.setHeader("Cache-Control", "no-cache");
@@ -335,7 +337,7 @@ public class HttpUtil {
         if (jsonParams != null && !"".equals(jsonParams)) {
             builder.addTextBody("description", jsonParams);
         }
-        builder.setCharset(StandardCharsets.UTF_8);
+        builder.setCharset(DEFAULT_CHARSET);
         HttpEntity entity = builder.build();
         httpPost.setEntity(entity);
         return httpPost;
@@ -349,7 +351,6 @@ public class HttpUtil {
      */
     private static String httpResult(HttpRequestBase request) {
         CloseableHttpResponse response = null;
-        configHttpRequest(request);
         try {
             response = httpClient.execute(request);
             HttpEntity entity = response.getEntity();
@@ -434,15 +435,10 @@ public class HttpUtil {
             // 请求幂等，再次尝试
             return !(request instanceof HttpEntityEnclosingRequest);
         };
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(2 * 1000).setSocketTimeout(2 * 1000)
+                .setConnectionRequestTimeout(500).build();
         return HttpClients.custom().setConnectionManager(connectionManager).setRetryHandler(httpRequestRetryHandler)
                 .setDefaultRequestConfig(requestConfig).build();
-    }
-
-    /**
-     * 配置请求超时时间
-     */
-    private static void configHttpRequest(HttpRequestBase httpRequestBase) {
-        httpRequestBase.setConfig(requestConfig);
     }
 
     /**
