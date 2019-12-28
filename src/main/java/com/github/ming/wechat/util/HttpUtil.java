@@ -166,7 +166,7 @@ public class HttpUtil {
             httpPost.setEntity(new UrlEncodedFormEntity(params2NVPs(params), DEFAULT_CHARSET.toString()));
             return httpResult(httpPost);
         } catch (UnsupportedEncodingException e) {
-            logger.error("携带参数的post请求   请求出错：" + e.getMessage(), e);
+            logger.error("携带参数的post请求 请求出错：" + e.getMessage(), e);
             e.printStackTrace();
             return null;
         }
